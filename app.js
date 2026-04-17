@@ -15,9 +15,9 @@ const firebaseConfig = {
   appId:             '1:954408081181:web:62d9122a3245053cd033f4',
 };
 
-const fbApp  = initializeApp(firebaseConfig);
-const db     = getFirestore(fbApp);
-const auth   = getAuth(fbApp);
+const fbApp     = initializeApp(firebaseConfig);
+const db        = getFirestore(fbApp);
+const auth      = getAuth(fbApp);
 const gProvider = new GoogleAuthProvider();
 
 // ============================================================
@@ -25,13 +25,14 @@ const gProvider = new GoogleAuthProvider();
 // ============================================================
 const today = new Date();
 let currentYear  = today.getFullYear();
-let currentMonth = today.getMonth(); // 0-indexed
-let selectedDate = null;             // "YYYY-MM-DD" | null
+let currentMonth = today.getMonth();
+let selectedDate = null;   // "YYYY-MM-DD" | null
+let editingId    = null;   // 編集中のTodo ID | null
 
 // ============================================================
 // Storage – Firestore
 // ============================================================
-let localData      = {};  // Firestoreと同期するインメモリキャッシュ
+let localData      = {};
 let currentUser    = null;
 let unsubFirestore = null;
 
@@ -83,10 +84,10 @@ function saveMonth(ymStr, md) {
 }
 
 // ============================================================
-// Storage – settings
+// Storage – Settings (localStorage)
 // ============================================================
-const SETTINGS_KEY       = 'todo-settings-v1';
-const DEFAULT_SETTINGS   = { notifyLeadMinutes: 30 };
+const SETTINGS_KEY     = 'todo-settings-v1';
+const DEFAULT_SETTINGS = { notifyLeadMinutes: 30 };
 
 function loadSettings() {
   try {
@@ -96,13 +97,61 @@ function loadSettings() {
 function saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
 
 // ============================================================
+// Trash（ごみ箱）
+// ============================================================
+const TRASH_TTL = 7 * 24 * 60 * 60 * 1000; // 7日
+
+function cleanOldTrash() {
+  if (!localData._trash) return;
+  const cutoff = Date.now() - TRASH_TTL;
+  localData._trash = localData._trash.filter(t => t.deletedAt > cutoff);
+}
+
+function addToTrash(item, type, key, ymStr) {
+  if (!localData._trash) localData._trash = [];
+  cleanOldTrash();
+  localData._trash.push({
+    ...item,
+    deletedAt:    Date.now(),
+    originalType: type,
+    originalKey:  key,
+    originalYm:   ymStr,
+  });
+}
+
+function restoreFromTrash(id) {
+  const trash = localData._trash || [];
+  const item  = trash.find(t => t.id === id);
+  if (!item) return;
+  const { deletedAt, originalType, originalKey, originalYm, ...todoItem } = item;
+  const md = getMonth(originalYm);
+  if      (originalType === 'monthly') md.monthly.push(todoItem);
+  else if (originalType === 'weekly')  { if (!md.weekly[originalKey]) md.weekly[originalKey] = []; md.weekly[originalKey].push(todoItem); }
+  else                                 { if (!md.daily[originalKey])  md.daily[originalKey]  = []; md.daily[originalKey].push(todoItem); }
+  localData[originalYm] = md;
+  localData._trash = trash.filter(t => t.id !== id);
+  saveToFirestore();
+  render();
+  renderSettings();
+}
+
+function permanentDeleteFromTrash(id) {
+  localData._trash = (localData._trash || []).filter(t => t.id !== id);
+  saveToFirestore();
+  renderSettings();
+}
+
+// ============================================================
 // Notifications
 // ============================================================
 let notifTimers = [];
 
-/** "1300~" "1330～" → { h:13, min:0 } など。一致しなければ null */
+/** 全角数字・チルダを半角に正規化してから時刻パース */
 function parseTime(text) {
-  const m = text.match(/(\d{1,2})(\d{2})[~～]/);
+  const normalized = text
+    .replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[〜～]/g, '~');
+  const m = normalized.match(/(\d{1,2})(\d{2})~/);
   if (!m) return null;
   const h = parseInt(m[1], 10), min = parseInt(m[2], 10);
   if (h > 23 || min > 59) return null;
@@ -115,27 +164,44 @@ function scheduleNotifications() {
   if (Notification.permission !== 'granted') return;
 
   const { notifyLeadMinutes } = loadSettings();
-  const now  = Date.now();
+  const now = Date.now();
+
+  // 今日の週範囲
+  const todayDate = new Date(TODAY_STR + 'T00:00:00');
+  const thisMonday = monday(todayDate);
+  const thisSunday = new Date(thisMonday);
+  thisSunday.setDate(thisMonday.getDate() + 6);
+
+  function schedule(todo) {
+    if (todo.done) return;
+    const t = parseTime(todo.text);
+    if (!t) return;
+    const target = new Date();
+    target.setHours(t.h, t.min, 0, 0);
+    const delay = target.getTime() - notifyLeadMinutes * 60_000 - now;
+    if (delay > 0) {
+      notifTimers.push(setTimeout(() => {
+        new Notification('📋 Todo リマインダー', { body: todo.text });
+      }, delay));
+    }
+  }
 
   for (const md of Object.values(localData)) {
-    const all = [
-      ...(md.monthly || []),
-      ...Object.values(md.weekly || {}).flat(),
-      ...Object.values(md.daily  || {}).flat(),
-    ];
-    for (const todo of all) {
-      if (todo.done) continue;
-      const t = parseTime(todo.text);
-      if (!t) continue;
-      const target = new Date();
-      target.setHours(t.h, t.min, 0, 0);
-      const delay = target.getTime() - notifyLeadMinutes * 60_000 - now;
-      if (delay > 0) {
-        notifTimers.push(setTimeout(() => {
-          new Notification('📋 Todo リマインダー', { body: todo.text });
-        }, delay));
+    if (typeof md !== 'object' || Array.isArray(md)) continue;
+
+    // 月間: 今月のものだけ
+    for (const todo of md.monthly || []) schedule(todo);
+
+    // 週間: 今週の週キーのもののみ
+    for (const [wk, list] of Object.entries(md.weekly || {})) {
+      const wkDate = new Date(wk + 'T00:00:00');
+      if (wkDate >= thisMonday && wkDate <= thisSunday) {
+        for (const todo of list) schedule(todo);
       }
     }
+
+    // 日別: 今日の日付のもののみ
+    for (const todo of (md.daily || {})[TODAY_STR] || []) schedule(todo);
   }
 }
 
@@ -145,15 +211,12 @@ function scheduleNotifications() {
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
-
 function ym() {
   return `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
 }
-
 function toDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
-
 const TODAY_STR = toDateStr(today);
 
 function monday(d) {
@@ -198,6 +261,7 @@ function esc(s) {
 // ============================================================
 // HTML helpers
 // ============================================================
+const PENCIL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>`;
 
 function progressBarHtml(done, total) {
   if (total === 0) return '';
@@ -213,6 +277,20 @@ function progressBarHtml(done, total) {
 }
 
 function todoItemHtml(item, type, key) {
+  // 編集モード
+  if (item.id === editingId) {
+    return `
+      <div class="flex items-center gap-2 py-1.5">
+        <input type="checkbox" class="w-4 h-4 accent-blue-500 flex-shrink-0 opacity-30 cursor-not-allowed" disabled ${item.done ? 'checked' : ''}>
+        <input type="text" class="edit-input flex-1 text-sm border border-blue-400 rounded-lg px-2 py-0.5 focus:outline-none"
+          value="${esc(item.text)}"
+          data-type="${esc(type)}" data-key="${esc(key)}" data-id="${esc(item.id)}">
+        <button class="edit-save text-green-500 hover:text-green-700 text-base px-1 flex-shrink-0"
+          data-type="${esc(type)}" data-key="${esc(key)}" data-id="${esc(item.id)}">✓</button>
+        <button class="edit-cancel text-gray-400 hover:text-gray-600 text-base px-1 flex-shrink-0">✗</button>
+      </div>`;
+  }
+
   const done     = item.done;
   const hasTime  = !!parseTime(item.text);
   const timeBadge = hasTime
@@ -227,6 +305,11 @@ function todoItemHtml(item, type, key) {
       <span class="flex-1 text-sm leading-snug break-all
         ${done ? 'line-through text-gray-400' : 'text-gray-700'}">${esc(item.text)}</span>
       ${timeBadge}
+      <button
+        class="todo-edit opacity-0 group-hover:opacity-100 text-blue-400 hover:text-blue-600
+               text-xs px-1.5 py-0.5 rounded transition-opacity flex-shrink-0"
+        data-type="${esc(type)}" data-key="${esc(key)}" data-id="${esc(item.id)}"
+        title="編集">${PENCIL_SVG}</button>
       <button
         class="todo-del opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600
                text-xs px-1.5 py-0.5 rounded transition-opacity flex-shrink-0"
@@ -255,7 +338,7 @@ function renderCalendarSidebar() {
   const md         = getMonth(ymStr);
   const firstDay   = new Date(currentYear, currentMonth, 1);
   const lastDayNum = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const startDow   = (firstDay.getDay() + 6) % 7; // Mon=0 … Sun=6
+  const startDow   = (firstDay.getDay() + 6) % 7;
 
   const daysWithTodos = new Set(
     Object.entries(md.daily)
@@ -290,7 +373,6 @@ function renderCalendarSidebar() {
     return `<div class="${cls}" data-cal-date="${dateStr}">${d}${dot}</div>`;
   }).join('');
 
-  // Selected date detail panel
   let detailHtml = '';
   if (selectedDate && selectedDate.startsWith(ymStr)) {
     const selD   = new Date(selectedDate + 'T00:00:00');
@@ -355,9 +437,7 @@ function bindCalendarEvents() {
   });
 
   const clearBtn = document.getElementById('calClearDate');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => { selectedDate = null; render(); });
-  }
+  if (clearBtn) clearBtn.addEventListener('click', () => { selectedDate = null; render(); });
 
   sidebar.querySelectorAll('.cal-todo-chk').forEach(el => {
     el.addEventListener('change', () => {
@@ -376,6 +456,9 @@ function bindCalendarEvents() {
     el.addEventListener('click', () => {
       const ymStr = ym();
       const md    = getMonth(ymStr);
+      const list  = md.daily[el.dataset.date] || [];
+      const item  = list.find(t => t.id === el.dataset.id);
+      if (item) addToTrash(item, 'daily', el.dataset.date, ymStr);
       if (md.daily[el.dataset.date]) {
         md.daily[el.dataset.date] = md.daily[el.dataset.date].filter(t => t.id !== el.dataset.id);
       }
@@ -468,11 +551,23 @@ function renderTodoContent() {
 
   // ---- Daily ----
   const dailyData = md.daily;
-  const dKeySet   = new Set(Object.keys(dailyData));
-  if (isCurMon) dKeySet.add(TODAY_STR);
+
+  // Todoがある日付のみ + 選択中の日付
+  const dKeySet = new Set(
+    Object.keys(dailyData).filter(d => (dailyData[d] || []).length > 0)
+  );
   if (selectedDate && selectedDate.startsWith(ymStr)) dKeySet.add(selectedDate);
 
-  const sortedDays = [...dKeySet].filter(d => d.startsWith(ymStr)).sort();
+  // 今日以降→月末、その後1日→昨日 の順
+  const sortedDays = [...dKeySet]
+    .filter(d => d.startsWith(ymStr))
+    .sort((a, b) => {
+      if (!isCurMon) return a.localeCompare(b);
+      const aFuture = a >= TODAY_STR;
+      const bFuture = b >= TODAY_STR;
+      if (aFuture === bFuture) return a.localeCompare(b);
+      return aFuture ? -1 : 1;
+    });
 
   const defaultDay = (selectedDate && selectedDate.startsWith(ymStr))
     ? selectedDate
@@ -551,7 +646,7 @@ function bindTodoEvents() {
   const content = document.getElementById('content');
   const ymStr   = ym();
 
-  // Checkboxes
+  // チェックボックス
   content.querySelectorAll('.todo-chk').forEach(el => {
     el.addEventListener('change', () => {
       const md = getMonth(ymStr);
@@ -568,11 +663,17 @@ function bindTodoEvents() {
     });
   });
 
-  // Delete buttons
+  // 削除ボタン（ごみ箱へ）
   content.querySelectorAll('.todo-del').forEach(el => {
     el.addEventListener('click', () => {
       const md = getMonth(ymStr);
       const { type, key, id } = el.dataset;
+      let list;
+      if      (type === 'monthly') list = md.monthly;
+      else if (type === 'weekly')  list = md.weekly[key] || [];
+      else                         list = md.daily[key]  || [];
+      const item = list.find(t => t.id === id);
+      if (item) addToTrash(item, type, key, ymStr);
       if (type === 'monthly') {
         md.monthly = md.monthly.filter(t => t.id !== id);
       } else if (type === 'weekly') {
@@ -586,7 +687,50 @@ function bindTodoEvents() {
     });
   });
 
-  // Monthly add
+  // 編集ボタン
+  content.querySelectorAll('.todo-edit').forEach(el => {
+    el.addEventListener('click', () => {
+      editingId = el.dataset.id;
+      render();
+      // フォーカスをインプットへ
+      const input = content.querySelector('.edit-input');
+      if (input) { input.focus(); input.select(); }
+    });
+  });
+
+  // 編集保存・キャンセル
+  function saveEdit(type, key, id) {
+    const input = content.querySelector(`.edit-input[data-id="${id}"]`);
+    if (!input) return;
+    const newText = input.value.trim();
+    if (!newText) return;
+    const md = getMonth(ymStr);
+    let list;
+    if      (type === 'monthly') list = md.monthly;
+    else if (type === 'weekly')  list = md.weekly[key] || [];
+    else                         list = md.daily[key]  || [];
+    const item = list.find(t => t.id === id);
+    if (item) item.text = newText;
+    saveMonth(ymStr, md);
+    scheduleNotifications();
+    editingId = null;
+    render();
+  }
+
+  content.querySelectorAll('.edit-save').forEach(btn => {
+    btn.addEventListener('click', () => saveEdit(btn.dataset.type, btn.dataset.key, btn.dataset.id));
+  });
+  content.querySelectorAll('.edit-cancel').forEach(btn => {
+    btn.addEventListener('click', () => { editingId = null; render(); });
+  });
+  content.querySelectorAll('.edit-input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter')  saveEdit(input.dataset.type, input.dataset.key, input.dataset.id);
+      if (e.key === 'Escape') { editingId = null; render(); }
+    });
+  });
+
+  // 月間追加
   bindAddForm('monthly', text => {
     const md = getMonth(ymStr);
     md.monthly.push({ id: genId(), text, done: false });
@@ -595,7 +739,7 @@ function bindTodoEvents() {
     render();
   });
 
-  // Weekly add (per week)
+  // 週間追加
   weeksInMonth(currentYear, currentMonth).forEach(w => {
     bindAddForm(`weekly-${w.key}`, text => {
       const md = getMonth(ymStr);
@@ -607,10 +751,9 @@ function bindTodoEvents() {
     });
   });
 
-  // Daily inline add (per date)
+  // 日別インライン追加
   const isCurMon = (currentYear === today.getFullYear() && currentMonth === today.getMonth());
-  const dKeySet  = new Set(Object.keys(getMonth(ymStr).daily));
-  if (isCurMon) dKeySet.add(TODAY_STR);
+  const dKeySet  = new Set(Object.keys(getMonth(ymStr).daily).filter(d => (getMonth(ymStr).daily[d] || []).length > 0));
   if (selectedDate && selectedDate.startsWith(ymStr)) dKeySet.add(selectedDate);
   [...dKeySet].filter(d => d.startsWith(ymStr)).forEach(ds => {
     bindAddForm(`daily-${ds}`, text => {
@@ -623,7 +766,7 @@ function bindTodoEvents() {
     });
   });
 
-  // New date add
+  // 日付指定追加
   const newDayAdd  = document.getElementById('newDayAdd');
   const newDateInp = document.getElementById('newDate');
   const newTextInp = document.getElementById('newDayText');
@@ -645,17 +788,16 @@ function bindTodoEvents() {
 }
 
 // ============================================================
-// Notification schedule panel (right sidebar)
+// Notification schedule panel
 // ============================================================
 function renderNotificationPanel() {
   const { notifyLeadMinutes } = loadSettings();
-  const now  = new Date();
+  const now    = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
-  // 全ストレージから未完了かつ時刻付きの Todo を収集
   const items = [];
-
   for (const [ymStr, md] of Object.entries(localData)) {
+    if (typeof md !== 'object' || Array.isArray(md) || ymStr === '_trash') continue;
     for (const todo of md.monthly || []) {
       if (todo.done) continue;
       const t = parseTime(todo.text);
@@ -683,24 +825,20 @@ function renderNotificationPanel() {
     }
   }
 
-  // 予定時刻でソート
   items.sort((a, b) => (a.t.h * 60 + a.t.min) - (b.t.h * 60 + b.t.min));
 
   const fmt2 = n => String(n).padStart(2, '0');
-
   const notifyTimeStr = t => {
     const total = t.h * 60 + t.min - notifyLeadMinutes;
     const h = Math.floor(((total % 1440) + 1440) % 1440 / 60);
     const m = ((total % 60) + 60) % 60;
     return `${fmt2(h)}:${fmt2(m)}`;
   };
-
   const schedTimeStr = t => `${fmt2(t.h)}:${fmt2(t.min)}`;
 
   const itemsHtml = items.length
     ? items.map(({ todo, t, label }) => {
-        const schedMin = t.h * 60 + t.min;
-        const notifMin = schedMin - notifyLeadMinutes;
+        const notifMin = t.h * 60 + t.min - notifyLeadMinutes;
         const isPast   = notifMin < nowMin;
         return `
           <div class="py-2.5 border-b border-gray-50 last:border-0 ${isPast ? 'opacity-40' : ''}">
@@ -708,7 +846,9 @@ function renderNotificationPanel() {
               <span class="text-xs font-bold ${isPast ? 'text-gray-400' : 'text-orange-500'}">${notifyTimeStr(t)}</span>
               <span class="text-gray-300 text-xs">→</span>
               <span class="text-xs text-gray-500">${schedTimeStr(t)}</span>
-              ${isPast ? '<span class="ml-auto text-xs text-gray-400 bg-gray-100 rounded px-1">済</span>' : '<span class="ml-auto text-xs text-orange-400 bg-orange-50 rounded px-1">予定</span>'}
+              ${isPast
+                ? '<span class="ml-auto text-xs text-gray-400 bg-gray-100 rounded px-1">済</span>'
+                : '<span class="ml-auto text-xs text-orange-400 bg-orange-50 rounded px-1">予定</span>'}
             </div>
             <p class="text-xs text-gray-700 break-all leading-snug">${esc(todo.text)}</p>
             <p class="text-xs text-gray-400 mt-0.5">${label}</p>
@@ -758,7 +898,31 @@ function renderSettings() {
       <button id="signOutBtn" class="text-xs text-red-400 hover:text-red-600 flex-shrink-0">サインアウト</button>
     </div>` : '';
 
-  document.getElementById('settingsPanel').innerHTML = `
+  // ごみ箱
+  cleanOldTrash();
+  const trash = (localData._trash || []).sort((a, b) => b.deletedAt - a.deletedAt);
+  const trashHtml = trash.length
+    ? trash.map(t => {
+        const hoursAgo = Math.floor((Date.now() - t.deletedAt) / 3_600_000);
+        const timeLabel = hoursAgo < 1 ? 'たった今'
+          : hoursAgo < 24 ? `${hoursAgo}時間前`
+          : `${Math.floor(hoursAgo / 24)}日前`;
+        return `
+          <div class="flex items-center gap-2 py-2 border-b border-gray-50 last:border-0">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-600 break-all">${esc(t.text)}</p>
+              <p class="text-xs text-gray-400">${timeLabel}</p>
+            </div>
+            <button class="trash-restore text-xs text-blue-500 hover:text-blue-700 flex-shrink-0 px-1"
+              data-id="${esc(t.id)}">戻す</button>
+            <button class="trash-perm-delete text-xs text-red-400 hover:text-red-600 flex-shrink-0 px-1"
+              data-id="${esc(t.id)}">✕</button>
+          </div>`;
+      }).join('')
+    : '<p class="text-xs text-gray-400 py-3 text-center">削除されたTodoはありません</p>';
+
+  const panel = document.getElementById('settingsPanel');
+  panel.innerHTML = `
     <div class="flex items-center justify-between mb-5">
       <h2 class="text-lg font-bold text-gray-800">設定</h2>
       <button id="closeSettings" class="text-gray-400 hover:text-gray-700 text-xl leading-none">✕</button>
@@ -784,6 +948,10 @@ function renderSettings() {
           <p class="text-xs text-gray-400 mt-1">タイトルに「1300~」のような時刻が含まれるTodoに適用されます</p>
         </div>
       </div>
+      <div>
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">🗑 ごみ箱 <span class="text-xs font-normal text-gray-400">（7日間保持）</span></h3>
+        <div class="max-h-48 overflow-y-auto">${trashHtml}</div>
+      </div>
     </div>
     <div class="mt-6 flex justify-end gap-2">
       <button id="cancelSettings"
@@ -794,11 +962,10 @@ function renderSettings() {
                rounded-lg transition-colors font-medium">保存</button>
     </div>`;
 
-  document.getElementById('closeSettings').addEventListener('click', closeSettings);
-  document.getElementById('cancelSettings').addEventListener('click', closeSettings);
-
-  document.getElementById('saveSettings').addEventListener('click', () => {
-    const lead = parseInt(document.getElementById('leadMinInput').value, 10);
+  panel.querySelector('#closeSettings').addEventListener('click', closeSettings);
+  panel.querySelector('#cancelSettings').addEventListener('click', closeSettings);
+  panel.querySelector('#saveSettings').addEventListener('click', () => {
+    const lead = parseInt(panel.querySelector('#leadMinInput').value, 10);
     if (!isNaN(lead) && lead >= 1 && lead <= 120) {
       saveSettings({ ...loadSettings(), notifyLeadMinutes: lead });
       scheduleNotifications();
@@ -806,7 +973,7 @@ function renderSettings() {
     closeSettings();
   });
 
-  const reqBtn = document.getElementById('reqPermBtn');
+  const reqBtn = panel.querySelector('#reqPermBtn');
   if (reqBtn) {
     reqBtn.addEventListener('click', async () => {
       await Notification.requestPermission();
@@ -815,22 +982,22 @@ function renderSettings() {
     });
   }
 
-  const signOutBtn = document.getElementById('signOutBtn');
+  const signOutBtn = panel.querySelector('#signOutBtn');
   if (signOutBtn) {
-    signOutBtn.addEventListener('click', () => {
-      signOut(auth);
-      closeSettings();
-    });
+    signOutBtn.addEventListener('click', () => { signOut(auth); closeSettings(); });
   }
+
+  // ごみ箱操作
+  panel.querySelectorAll('.trash-restore').forEach(btn => {
+    btn.addEventListener('click', () => restoreFromTrash(btn.dataset.id));
+  });
+  panel.querySelectorAll('.trash-perm-delete').forEach(btn => {
+    btn.addEventListener('click', () => permanentDeleteFromTrash(btn.dataset.id));
+  });
 }
 
-function openSettings()  {
-  renderSettings();
-  document.getElementById('settingsModal').classList.remove('hidden');
-}
-function closeSettings() {
-  document.getElementById('settingsModal').classList.add('hidden');
-}
+function openSettings()  { renderSettings(); document.getElementById('settingsModal').classList.remove('hidden'); }
+function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
 
 // ============================================================
 // Main render
@@ -848,11 +1015,13 @@ function render() {
 document.getElementById('prevMonth').addEventListener('click', () => {
   if (--currentMonth < 0) { currentMonth = 11; currentYear--; }
   selectedDate = null;
+  editingId    = null;
   render();
 });
 document.getElementById('nextMonth').addEventListener('click', () => {
   if (++currentMonth > 11) { currentMonth = 0; currentYear++; }
   selectedDate = null;
+  editingId    = null;
   render();
 });
 
@@ -865,4 +1034,3 @@ document.getElementById('settingsModal').addEventListener('click', e => {
 });
 
 // render() は onAuthStateChanged → startSync → onSnapshot の中で呼ばれる
-scheduleNotifications();
