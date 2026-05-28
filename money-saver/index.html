@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Money Lifter</title>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html,body{width:100%;height:100%;overflow:hidden;}
+    body{
+      background:#0a0a18;
+      font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+      touch-action:manipulation;
+    }
+
+    /* ── SCREEN 1: NUMPAD ── */
+    #s-numpad{
+      position:fixed;inset:0;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+    }
+    .np-bg{
+      position:absolute;inset:0;
+      background:url('Gemini_Generated_Image_qfe5buqfe5buqfe5.png') center/cover;
+      filter:brightness(.28) blur(3px);
+    }
+    .np-inner{
+      position:relative;z-index:1;
+      width:min(360px,94vw);
+      display:flex;flex-direction:column;align-items:center;gap:13px;
+    }
+    .np-title{
+      font-size:clamp(1.5rem,6vw,2rem);font-weight:900;
+      color:#f5d060;text-shadow:0 2px 16px rgba(245,208,96,.5);letter-spacing:.06em;
+    }
+    .np-sub{color:rgba(255,255,255,.5);font-size:.82rem;}
+    #np-disp{
+      width:100%;background:rgba(0,0,0,.78);
+      border:2px solid rgba(245,208,96,.5);border-radius:12px;
+      padding:12px 18px;
+      display:flex;align-items:baseline;justify-content:flex-end;gap:6px;
+    }
+    #np-disp-num{font-size:clamp(1.8rem,8vw,2.7rem);font-weight:700;color:#f5d060;letter-spacing:1px;}
+    .np-yen{font-size:1rem;color:rgba(245,208,96,.6);}
+    #np-grid{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    .nk{
+      background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);
+      border-radius:10px;color:#fff;
+      font-size:clamp(1.3rem,5.5vw,1.9rem);font-weight:500;
+      padding:16px 0;cursor:pointer;
+      -webkit-tap-highlight-color:transparent;user-select:none;
+      transition:background .1s,transform .08s;
+    }
+    .nk:active{background:rgba(245,208,96,.25);transform:scale(.92);}
+    .nk-del{background:rgba(255,60,60,.09);border-color:rgba(255,60,60,.22);color:#ff7070;}
+    .nk-del:active{background:rgba(255,60,60,.28);}
+    .nk-clr{background:rgba(255,60,60,.06);border-color:rgba(255,60,60,.16);color:rgba(255,100,100,.85);font-size:1rem;}
+    .nk-clr:active{background:rgba(255,60,60,.22);}
+    .np-presets{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    .np-pre{
+      background:rgba(245,208,96,.1);border:1px solid rgba(245,208,96,.24);
+      border-radius:8px;color:rgba(245,208,96,.85);
+      font-size:.8rem;font-weight:600;padding:10px 0;cursor:pointer;
+      -webkit-tap-highlight-color:transparent;user-select:none;
+      transition:background .1s,transform .08s;
+    }
+    .np-pre:active{background:rgba(245,208,96,.28);transform:scale(.93);}
+    #np-start{
+      width:100%;padding:18px;border:none;border-radius:12px;
+      background:linear-gradient(135deg,#f5d060,#e09010);
+      color:#1a0900;font-size:1.3rem;font-weight:900;cursor:pointer;
+      letter-spacing:.06em;box-shadow:0 6px 28px rgba(245,208,96,.32);
+      -webkit-tap-highlight-color:transparent;transition:transform .1s;
+    }
+    #np-start:active{transform:scale(.96);}
+
+    /* ── SCREEN 2: APP ── */
+    #s-app{position:fixed;inset:0;display:none;}
+    #app-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
+    #app-cam{position:absolute;inset:0;width:100%;height:100%;z-index:1;opacity:.48;}
+
+    /* grab-zone hint ring */
+    #grab-ring{
+      position:absolute;inset:0;z-index:2;
+      display:flex;align-items:center;justify-content:center;
+      pointer-events:none;
+      transition:opacity .5s;
+    }
+    .ring{
+      position:absolute;
+      width:clamp(200px,62vw,290px);height:clamp(120px,38vw,175px);
+      border-radius:50%;border:2px dashed rgba(245,208,96,.38);
+      animation:ring-pulse 2.5s ease-in-out infinite;
+    }
+    @keyframes ring-pulse{
+      0%,100%{opacity:.55;transform:scale(1);}
+      50%{opacity:.15;transform:scale(1.09);}
+    }
+
+    /* bill */
+    #bill-stage{
+      position:absolute;inset:0;z-index:2;
+      display:flex;align-items:center;justify-content:center;
+      pointer-events:none;
+    }
+    #bill-wrap{
+      position:relative;transform-origin:center center;will-change:transform;
+    }
+    @keyframes bill-float{
+      0%,100%{transform:translateY(0);}
+      50%{transform:translateY(-10px);}
+    }
+    #bill-img{
+      width:clamp(170px,54vw,250px);display:block;
+      filter:drop-shadow(0 16px 40px rgba(0,0,0,.75));
+      animation:bill-float 3s ease-in-out infinite;
+    }
+    #bill-wrap.grabbed #bill-img{
+      animation:none;
+      filter:drop-shadow(0 16px 40px rgba(0,0,0,.75))
+             drop-shadow(0 0 26px rgba(245,208,96,.7));
+    }
+    #bill-lbl{
+      position:absolute;bottom:-44px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.82);border:1px solid rgba(245,208,96,.48);
+      border-radius:8px;padding:6px 18px;
+      color:#f5d060;font-size:clamp(.92rem,3.5vw,1.2rem);font-weight:700;
+      white-space:nowrap;
+    }
+
+    /* lift bar (right) */
+    #lift-bar{
+      position:absolute;right:13px;top:50%;transform:translateY(-50%);
+      z-index:3;display:flex;flex-direction:column;align-items:center;gap:5px;
+    }
+    #lift-track{
+      width:10px;height:150px;
+      background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.17);
+      border-radius:6px;position:relative;overflow:hidden;
+    }
+    #lift-fill{
+      position:absolute;bottom:0;width:100%;
+      background:linear-gradient(to top,#f5d060,#ff8800);
+      border-radius:6px;transition:height .08s;
+    }
+    #lift-lbl{color:rgba(255,255,255,.55);font-size:.58rem;text-align:center;}
+
+    /* scale readout (left) */
+    #scale-box{
+      position:absolute;left:13px;top:50%;transform:translateY(-50%);
+      z-index:3;background:rgba(0,0,0,.65);
+      border:1px solid rgba(245,208,96,.28);border-radius:10px;
+      padding:10px 11px;color:#f5d060;
+      font-size:1.1rem;font-weight:700;text-align:center;min-width:52px;
+    }
+    #scale-box small{display:block;font-size:.58rem;color:rgba(255,255,255,.45);font-weight:400;}
+
+    /* status bar */
+    #status{
+      position:absolute;top:14px;left:50%;transform:translateX(-50%);
+      z-index:3;background:rgba(0,0,0,.72);
+      border:1px solid rgba(255,255,255,.14);border-radius:20px;
+      padding:7px 18px;color:#fff;font-size:.84rem;
+      white-space:nowrap;max-width:90vw;text-align:center;
+    }
+
+    /* pinch marker */
+    #pinch-dot{
+      position:absolute;z-index:4;
+      width:32px;height:32px;border-radius:50%;
+      border:2.5px solid #f5d060;background:rgba(245,208,96,.22);
+      transform:translate(-50%,-50%);
+      display:none;pointer-events:none;
+      box-shadow:0 0 14px rgba(245,208,96,.5);
+    }
+
+    /* back button */
+    #btn-back{
+      position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+      z-index:5;background:rgba(0,0,0,.65);
+      border:1px solid rgba(255,255,255,.22);border-radius:22px;
+      color:rgba(255,255,255,.85);font-size:.9rem;padding:9px 26px;
+      cursor:pointer;-webkit-tap-highlight-color:transparent;
+    }
+    #btn-back:active{opacity:.65;}
+
+    /* loading overlay */
+    #loading-ovl{
+      position:absolute;inset:0;z-index:10;
+      background:rgba(0,0,0,.82);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:14px;color:#fff;font-size:.9rem;
+    }
+    .spinner{
+      width:44px;height:44px;
+      border:4px solid rgba(245,208,96,.22);border-top-color:#f5d060;
+      border-radius:50%;animation:spin .9s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg);}}
+    #loading-ovl.hidden{display:none;}
+  </style>
+</head>
+<body>
+
+<!-- ════ SCREEN 1: NUMPAD ════ -->
+<div id="s-numpad">
+  <div class="np-bg"></div>
+  <div class="np-inner">
+    <div class="np-title">💴 Money Lifter</div>
+    <div class="np-sub">金額を入力してお金を持ち上げよう</div>
+
+    <div id="np-disp">
+      <span id="np-disp-num">0</span>
+      <span class="np-yen">円</span>
+    </div>
+
+    <div id="np-grid">
+      <button class="nk" data-v="7">7</button>
+      <button class="nk" data-v="8">8</button>
+      <button class="nk" data-v="9">9</button>
+      <button class="nk" data-v="4">4</button>
+      <button class="nk" data-v="5">5</button>
+      <button class="nk" data-v="6">6</button>
+      <button class="nk" data-v="1">1</button>
+      <button class="nk" data-v="2">2</button>
+      <button class="nk" data-v="3">3</button>
+      <button class="nk nk-clr" data-v="C">C</button>
+      <button class="nk" data-v="0">0</button>
+      <button class="nk nk-del" data-v="DEL">⌫</button>
+    </div>
+
+    <div class="np-presets">
+      <button class="np-pre" data-pre="1000">¥1,000</button>
+      <button class="np-pre" data-pre="5000">¥5,000</button>
+      <button class="np-pre" data-pre="10000">¥10,000</button>
+    </div>
+
+    <button id="np-start">スタート →</button>
+  </div>
+</div>
+
+<!-- ════ SCREEN 2: APP ════ -->
+<div id="s-app">
+  <img id="app-bg" src="Gemini_Generated_Image_qfe5buqfe5buqfe5.png" alt="">
+  <canvas id="app-cam"></canvas>
+
+  <div id="grab-ring"><div class="ring"></div></div>
+
+  <div id="bill-stage">
+    <div id="bill-wrap">
+      <img id="bill-img" src="money005.png" alt="お札">
+      <div id="bill-lbl">¥10,000</div>
+    </div>
+  </div>
+
+  <div id="lift-bar">
+    <div id="lift-track"><div id="lift-fill" style="height:0%"></div></div>
+    <div id="lift-lbl">LIFT</div>
+  </div>
+
+  <div id="scale-box">
+    <span id="scale-num">1.00</span>
+    <small>× 倍率</small>
+  </div>
+
+  <div id="status">カメラ起動中...</div>
+  <div id="pinch-dot"></div>
+  <button id="btn-back">← 戻る</button>
+
+  <div id="loading-ovl">
+    <div class="spinner"></div>
+    <div>ハンドトラッキング初期化中...</div>
+    <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:4px;">初回は少し時間がかかります</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
+<script>
+'use strict';
+
+/* ── DOM refs ──────────────────────────────────── */
+const sNumpad    = document.getElementById('s-numpad');
+const sApp       = document.getElementById('s-app');
+const npDispNum  = document.getElementById('np-disp-num');
+const billWrap   = document.getElementById('bill-wrap');
+const billLbl    = document.getElementById('bill-lbl');
+const statusEl   = document.getElementById('status');
+const pinchDot   = document.getElementById('pinch-dot');
+const camCanvas  = document.getElementById('app-cam');
+const liftFill   = document.getElementById('lift-fill');
+const scaleNum   = document.getElementById('scale-num');
+const grabRing   = document.getElementById('grab-ring');
+const loadingOvl = document.getElementById('loading-ovl');
+const camCtx     = camCanvas.getContext('2d');
+
+/* ── Numpad logic ──────────────────────────────── */
+let rawStr = '0';
+
+function refreshDisp() {
+  npDispNum.textContent = (parseInt(rawStr, 10) || 0).toLocaleString('ja-JP');
+}
+
+document.querySelectorAll('.nk').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const v = btn.dataset.v;
+    if      (v === 'DEL') rawStr = rawStr.length > 1 ? rawStr.slice(0, -1) : '0';
+    else if (v === 'C')   rawStr = '0';
+    else {
+      if (rawStr === '0') rawStr = v;
+      else if (rawStr.length < 9) rawStr += v;
+    }
+    refreshDisp();
+  });
+});
+
+document.querySelectorAll('.np-pre').forEach(btn => {
+  btn.addEventListener('click', () => { rawStr = btn.dataset.pre; refreshDisp(); });
+});
+
+document.getElementById('np-start').addEventListener('click', () => {
+  const amt = parseInt(rawStr, 10) || 0;
+  if (amt <= 0) { alert('金額を入力してください'); return; }
+  startApp(amt);
+});
+
+document.getElementById('btn-back').addEventListener('click', stopApp);
+
+/* ── Scale formula ─────────────────────────────────
+   反比例: scale_max = 1 + 5000/amount
+   5000円→2.0, 10000円→1.5, 20000円→1.25 (仕様の近似値)
+─────────────────────────────────────────────────── */
+function calcMaxScale(amount) {
+  return Math.min(1 + 5000 / Math.max(amount, 50), 6.0);
+}
+
+function fmtJPY(n) {
+  return '¥' + n.toLocaleString('ja-JP');
+}
+
+/* ── App state ─────────────────────────────────── */
+let currentAmt  = 0;
+let maxSc       = 1.5;
+let animSc      = 1.0;
+let targetSc    = 1.0;
+let isGrabbing  = false;
+let wasPinching = false;
+let grabHandSz  = 0;
+let liftFrac    = 0;
+
+let mpHands    = null;
+let mpCamera   = null;
+let hidVid     = null;
+let rafHandle  = null;
+
+/* ── Start / Stop ──────────────────────────────── */
+function startApp(amount) {
+  currentAmt  = amount;
+  maxSc       = calcMaxScale(amount);
+  animSc      = 1.0;
+  targetSc    = 1.0;
+  isGrabbing  = false;
+  wasPinching = false;
+  liftFrac    = 0;
+
+  billLbl.textContent         = fmtJPY(amount);
+  billWrap.classList.remove('grabbed');
+  billWrap.style.transform    = 'scale(1)';
+  liftFill.style.height       = '0%';
+  scaleNum.textContent        = '1.00';
+  grabRing.style.opacity      = '1';
+  loadingOvl.classList.remove('hidden');
+  statusEl.textContent        = 'カメラ起動中...';
+
+  sNumpad.style.display = 'none';
+  sApp.style.display    = 'block';
+
+  // Safety: hide loading after 25s if camera never starts
+  setTimeout(() => loadingOvl.classList.add('hidden'), 25000);
+
+  initMP();
+  rafHandle = requestAnimationFrame(renderLoop);
+}
+
+function stopApp() {
+  cancelAnimationFrame(rafHandle);
+  if (mpCamera) { try { mpCamera.stop(); } catch(_){} mpCamera = null; }
+  if (hidVid)   {
+    try { hidVid.srcObject && hidVid.srcObject.getTracks().forEach(t => t.stop()); } catch(_){}
+    hidVid.remove(); hidVid = null;
+  }
+  if (mpHands)  { try { mpHands.close(); } catch(_){} mpHands = null; }
+  sApp.style.display    = 'none';
+  sNumpad.style.display = 'flex';
+}
+
+/* ── MediaPipe init ────────────────────────────── */
+function initMP() {
+  hidVid = document.createElement('video');
+  hidVid.setAttribute('playsinline', '');
+  hidVid.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;';
+  document.body.appendChild(hidVid);
+
+  mpHands = new Hands({
+    locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`
+  });
+  mpHands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.65,
+    minTrackingConfidence: 0.55,
+  });
+  mpHands.onResults(onResults);
+
+  mpCamera = new Camera(hidVid, {
+    onFrame: async () => {
+      // Sync canvas size to viewport
+      if (camCanvas.width !== window.innerWidth) {
+        camCanvas.width  = window.innerWidth;
+        camCanvas.height = window.innerHeight;
+      }
+      // Draw mirrored camera feed (front camera natural mirror)
+      camCtx.save();
+      camCtx.translate(camCanvas.width, 0);
+      camCtx.scale(-1, 1);
+      camCtx.drawImage(hidVid, 0, 0, camCanvas.width, camCanvas.height);
+      camCtx.restore();
+
+      await mpHands.send({ image: hidVid });
+    },
+    width: 640, height: 480,
+    facingMode: 'user',
+  });
+
+  mpCamera.start()
+    .then(() => {
+      loadingOvl.classList.add('hidden');
+      statusEl.textContent = '手を映して、ピンチでつかもう';
+    })
+    .catch(err => {
+      loadingOvl.classList.add('hidden');
+      statusEl.textContent = 'カメラエラー: ' + (err.message || String(err));
+    });
+}
+
+/* ── Landmark helpers ──────────────────────────── */
+function d2(a, b) {
+  const dx = a.x - b.x, dy = a.y - b.y;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+// Wrist(0)→Middle-MCP(9): scales with distance from camera
+function handSz(lm)    { return d2(lm[0], lm[9]); }
+// Thumb tip(4)→Index tip(8) / hand size
+function pinchRat(lm)  { const h = handSz(lm); return h > 1e-3 ? d2(lm[4], lm[8]) / h : 1; }
+// Midpoint of thumb/index tips (normalized coords)
+function pinchCtr(lm)  { return { x: (lm[4].x + lm[8].x) / 2, y: (lm[4].y + lm[8].y) / 2 }; }
+
+/* ── Hand results callback ─────────────────────── */
+function onResults(res) {
+  const lmArr = res.multiHandLandmarks;
+
+  if (!lmArr || lmArr.length === 0) {
+    if (isGrabbing) {
+      isGrabbing = false;
+      billWrap.classList.remove('grabbed');
+      grabRing.style.opacity = '1';
+      statusEl.textContent = '手が見えません… もう一度かざしてください';
+    }
+    wasPinching = false;
+    targetSc    = 1.0;
+    liftFrac    = 0;
+    pinchDot.style.display = 'none';
+    return;
+  }
+
+  const lm       = lmArr[0];
+  const pr       = pinchRat(lm);
+  const hs       = handSz(lm);
+  const pc       = pinchCtr(lm);
+  const pinching = pr < 0.26;
+
+  // Mirror x for display (front camera)
+  const sx = (1 - pc.x) * window.innerWidth;
+  const sy = pc.y * window.innerHeight;
+
+  pinchDot.style.display = pinching ? 'block' : 'none';
+  if (pinching) { pinchDot.style.left = sx + 'px'; pinchDot.style.top = sy + 'px'; }
+
+  // ── Pinch START ──
+  if (pinching && !wasPinching) {
+    // MediaPipe coords are video-space (not mirrored), bill is at center (0.5, 0.5)
+    const nearCenter = Math.abs(pc.x - 0.5) < 0.32 && Math.abs(pc.y - 0.5) < 0.35;
+    if (nearCenter && !isGrabbing) {
+      isGrabbing             = true;
+      grabHandSz             = hs;
+      grabRing.style.opacity = '0';
+      billWrap.classList.add('grabbed');
+      statusEl.textContent = '✊ つかんだ！スマホから手を遠ざけよう！';
+    }
+  }
+
+  // ── Pinch END ──
+  if (!pinching && wasPinching) {
+    if (isGrabbing) {
+      isGrabbing             = false;
+      billWrap.classList.remove('grabbed');
+      grabRing.style.opacity = '1';
+      statusEl.textContent   = '手を映して、ピンチでつかもう';
+    }
+  }
+
+  wasPinching = pinching;
+
+  // ── Scale update while grabbing ──
+  if (isGrabbing && pinching) {
+    // sizeRatio < 1 → hand moved away from camera (away from phone)
+    const szRatio = hs / Math.max(grabHandSz, 1e-4);
+    // 25% size decrease ≈ 10cm of movement at typical phone distance
+    liftFrac = Math.min(Math.max(0, (1 - szRatio) / 0.25), 1.0);
+    targetSc = 1.0 + (maxSc - 1.0) * liftFrac;
+  } else if (!isGrabbing) {
+    targetSc = 1.0;
+    liftFrac = 0;
+  }
+}
+
+/* ── Render loop ───────────────────────────────── */
+function renderLoop() {
+  if (sApp.style.display !== 'block') return;
+
+  // Smooth lerp toward target scale
+  animSc += (targetSc - animSc) * 0.12;
+
+  billWrap.style.transform = 'scale(' + animSc.toFixed(4) + ')';
+
+  // Lift bar
+  const pct = maxSc > 1 ? ((animSc - 1) / (maxSc - 1)) * 100 : 0;
+  liftFill.style.height = Math.min(pct, 100).toFixed(1) + '%';
+  scaleNum.textContent  = animSc.toFixed(2);
+
+  rafHandle = requestAnimationFrame(renderLoop);
+}
+</script>
+</body>
+</html>
