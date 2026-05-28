@@ -519,7 +519,10 @@ function onResults(res) {
   const pr       = pinchRat(lm);
   const hs       = handSz(lm);
   const pc       = pinchCtr(lm);
-  const pinching = pr < 0.26;
+  // ヒステリシス: 掴み開始は厳しめ(0.24)、解除は緩め(0.36)
+  // → 手が動いても閾値付近でバタつかず保持できる
+  const pinchThresh = isGrabbing ? 0.36 : 0.24;
+  const pinching    = pr < pinchThresh;
 
   // Mirror x for display (front camera)
   const sx = (1 - pc.x) * window.innerWidth;
