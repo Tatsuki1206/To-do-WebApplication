@@ -74,8 +74,13 @@
     #np-start:active{transform:scale(.96);}
 
     /* ── SCREEN 2: APP ── */
-    #s-app{position:fixed;inset:0;display:none;}
-    #app-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
+    #s-app{position:fixed;inset:0;display:none;overflow:hidden;}
+    /* 130%にして周囲15%の余白を確保し、ジャイロ傾きで平行移動するパララックス用 */
+    #app-bg{
+      position:absolute;width:130%;height:130%;top:-15%;left:-15%;
+      object-fit:cover;z-index:0;will-change:transform;
+      transition:transform 0.08s linear;
+    }
     #app-cam{position:absolute;inset:0;width:100%;height:100%;z-index:1;opacity:.48;}
 
     /* grab-zone hint ring */
@@ -291,6 +296,7 @@ const liftFill   = document.getElementById('lift-fill');
 const scaleNum   = document.getElementById('scale-num');
 const grabRing   = document.getElementById('grab-ring');
 const loadingOvl = document.getElementById('loading-ovl');
+const appBgEl    = document.getElementById('app-bg');
 const camCtx     = camCanvas.getContext('2d');
 
 /* ── Numpad logic ──────────────────────────────── */
@@ -347,6 +353,14 @@ let wasPinching = false;
 let grabHandSz  = 0;
 let liftFrac    = 0;
 
+// ジャイロ／パララックス state
+let rawTiltX   = 0, rawTiltY   = 0;   // deviceorientation: gamma / beta
+let smoothTX   = 0, smoothTY   = 0;   // EMA平滑化済み
+let tiltBaseX  = 0, tiltBaseY  = 0;   // 掴んだ瞬間の基準値
+const CD_BASE  = 1.2;                  // 基本C/D比（lift=0時のオフセット感度）
+const TILT_PX  = 5.0;                  // 1°あたりの最大ピクセル移動量
+let gyroActive = false;
+
 let mpHands    = null;
 let mpCamera   = null;
 let hidVid     = null;
@@ -377,6 +391,7 @@ function startApp(amount) {
   // Safety: hide loading after 25s if camera never starts
   setTimeout(() => loadingOvl.classList.add('hidden'), 25000);
 
+  initGyro();   // ジャイロ権限取得（iOS: startApp はボタン tap 起点なので OK）
   initMP();
   rafHandle = requestAnimationFrame(renderLoop);
 }
@@ -389,8 +404,36 @@ function stopApp() {
     hidVid.remove(); hidVid = null;
   }
   if (mpHands)  { try { mpHands.close(); } catch(_){} mpHands = null; }
+  // 背景リセット
+  rawTiltX = rawTiltY = smoothTX = smoothTY = 0;
+  appBgEl.style.transform = '';
   sApp.style.display    = 'none';
   sNumpad.style.display = 'flex';
+}
+
+/* ── Gyroscope init ────────────────────────────── */
+function initGyro() {
+  if (gyroActive) return;
+  const handler = e => {
+    rawTiltX = e.gamma != null ? e.gamma : 0;  // 左右: -90..90°
+    rawTiltY = e.beta  != null ? e.beta  : 0;  // 前後: -180..180°
+  };
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    // iOS 13+ は明示的な権限が必要
+    DeviceOrientationEvent.requestPermission()
+      .then(s => {
+        if (s === 'granted') {
+          window.addEventListener('deviceorientation', handler, true);
+          gyroActive = true;
+        }
+      })
+      .catch(() => {});
+  } else {
+    // Android / 旧 iOS: 自動で取得可能
+    window.addEventListener('deviceorientation', handler, true);
+    gyroActive = true;
+  }
 }
 
 /* ── MediaPipe init ────────────────────────────── */
@@ -492,9 +535,11 @@ function onResults(res) {
     if (nearCenter && !isGrabbing) {
       isGrabbing             = true;
       grabHandSz             = hs;
+      tiltBaseX              = smoothTX;  // 掴んだ瞬間の傾きを基準にする
+      tiltBaseY              = smoothTY;
       grabRing.style.opacity = '0';
       billWrap.classList.add('grabbed');
-      statusEl.textContent = '✊ つかんだ！スマホから手を遠ざけよう！';
+      statusEl.textContent = '✊ つかんだ！スマホを傾けて奥行きを感じよう！';
     }
   }
 
@@ -527,15 +572,35 @@ function onResults(res) {
 function renderLoop() {
   if (sApp.style.display !== 'block') return;
 
-  // Smooth lerp toward target scale
+  // ── お札スケール lerp ──
   animSc += (targetSc - animSc) * 0.12;
-
   billWrap.style.transform = 'scale(' + animSc.toFixed(4) + ')';
 
   // Lift bar
   const pct = maxSc > 1 ? ((animSc - 1) / (maxSc - 1)) * 100 : 0;
   liftFill.style.height = Math.min(pct, 100).toFixed(1) + '%';
   scaleNum.textContent  = animSc.toFixed(2);
+
+  // ── 背景パララックス（ジャイロ × liftFrac） ──
+  // tilt の EMA 平滑化（α=0.15: 高速すぎず滑らか）
+  smoothTX += (rawTiltX - smoothTX) * 0.15;
+  smoothTY += (rawTiltY - smoothTY) * 0.15;
+
+  // 掴んだ瞬間の角度を基準とした偏差
+  const dX = smoothTX - tiltBaseX;  // 左右傾き偏差 (°)
+  const dY = smoothTY - tiltBaseY;  // 前後傾き偏差 (°)
+
+  // C/D比: liftFrac が増えるほど比率が下がり（応答が増幅）、奥行き感が強まる
+  //   liftFrac=0 → CD=∞（動かない）  liftFrac=1 → CD=CD_BASE
+  const cdEffective = CD_BASE / Math.max(liftFrac, 0.001);
+
+  // ピクセル移動量 = 偏差(°) × 感度 / CD比 × liftFrac（lift中のみ有効）
+  const maxPad = window.innerWidth * 0.12;  // 背景余白の最大利用量
+  const bgX = Math.max(-maxPad, Math.min(maxPad, (dX / cdEffective) * TILT_PX * liftFrac));
+  const bgY = Math.max(-maxPad, Math.min(maxPad, (dY / cdEffective) * TILT_PX * liftFrac * 0.5));
+
+  // 背景を傾きと逆方向へ（視差の自然な方向）
+  appBgEl.style.transform = `translate(${-bgX}px, ${-bgY}px)`;
 
   rafHandle = requestAnimationFrame(renderLoop);
 }
