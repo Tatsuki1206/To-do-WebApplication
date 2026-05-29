@@ -7,199 +7,53 @@
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
     html,body{width:100%;height:100%;overflow:hidden;}
-    body{
-      background:#0a0a18;
-      font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
-      touch-action:manipulation;
-    }
+    body{background:#0a0510;font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;touch-action:manipulation;}
 
     /* ── SCREEN 1: NUMPAD ── */
-    #s-numpad{
-      position:fixed;inset:0;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-    }
-    .np-bg{
-      position:absolute;inset:0;
-      background:url('Gemini_Generated_Image_qfe5buqfe5buqfe5.png') center/cover;
-      filter:brightness(.28) blur(3px);
-    }
-    .np-inner{
-      position:relative;z-index:1;
-      width:min(360px,94vw);
-      display:flex;flex-direction:column;align-items:center;gap:13px;
-    }
-    .np-title{
-      font-size:clamp(1.5rem,6vw,2rem);font-weight:900;
-      color:#f5d060;text-shadow:0 2px 16px rgba(245,208,96,.5);letter-spacing:.06em;
-    }
+    #s-numpad{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .np-bg{position:absolute;inset:0;background:#1a0a02;background-image:repeating-linear-gradient(0deg,transparent,transparent 18px,rgba(255,180,80,.04) 18px,rgba(255,180,80,.04) 19px),repeating-linear-gradient(90deg,transparent,transparent 18px,rgba(255,180,80,.04) 18px,rgba(255,180,80,.04) 19px);}
+    .np-inner{position:relative;z-index:1;width:min(360px,94vw);display:flex;flex-direction:column;align-items:center;gap:13px;}
+    .np-title{font-size:clamp(1.5rem,6vw,2rem);font-weight:900;color:#f5d060;text-shadow:0 2px 16px rgba(245,208,96,.5);letter-spacing:.06em;}
     .np-sub{color:rgba(255,255,255,.5);font-size:.82rem;}
-    #np-disp{
-      width:100%;background:rgba(0,0,0,.78);
-      border:2px solid rgba(245,208,96,.5);border-radius:12px;
-      padding:12px 18px;
-      display:flex;align-items:baseline;justify-content:flex-end;gap:6px;
-    }
+    #np-disp{width:100%;background:rgba(0,0,0,.78);border:2px solid rgba(245,208,96,.5);border-radius:12px;padding:12px 18px;display:flex;align-items:baseline;justify-content:flex-end;gap:6px;}
     #np-disp-num{font-size:clamp(1.8rem,8vw,2.7rem);font-weight:700;color:#f5d060;letter-spacing:1px;}
     .np-yen{font-size:1rem;color:rgba(245,208,96,.6);}
     #np-grid{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-    .nk{
-      background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);
-      border-radius:10px;color:#fff;
-      font-size:clamp(1.3rem,5.5vw,1.9rem);font-weight:500;
-      padding:16px 0;cursor:pointer;
-      -webkit-tap-highlight-color:transparent;user-select:none;
-      transition:background .1s,transform .08s;
-    }
+    .nk{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:10px;color:#fff;font-size:clamp(1.3rem,5.5vw,1.9rem);font-weight:500;padding:16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .1s,transform .08s;}
     .nk:active{background:rgba(245,208,96,.25);transform:scale(.92);}
     .nk-del{background:rgba(255,60,60,.09);border-color:rgba(255,60,60,.22);color:#ff7070;}
     .nk-del:active{background:rgba(255,60,60,.28);}
     .nk-clr{background:rgba(255,60,60,.06);border-color:rgba(255,60,60,.16);color:rgba(255,100,100,.85);font-size:1rem;}
     .nk-clr:active{background:rgba(255,60,60,.22);}
     .np-presets{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-    .np-pre{
-      background:rgba(245,208,96,.1);border:1px solid rgba(245,208,96,.24);
-      border-radius:8px;color:rgba(245,208,96,.85);
-      font-size:.8rem;font-weight:600;padding:10px 0;cursor:pointer;
-      -webkit-tap-highlight-color:transparent;user-select:none;
-      transition:background .1s,transform .08s;
-    }
+    .np-pre{background:rgba(245,208,96,.1);border:1px solid rgba(245,208,96,.24);border-radius:8px;color:rgba(245,208,96,.85);font-size:.8rem;font-weight:600;padding:10px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .1s,transform .08s;}
     .np-pre:active{background:rgba(245,208,96,.28);transform:scale(.93);}
-    #np-start{
-      width:100%;padding:18px;border:none;border-radius:12px;
-      background:linear-gradient(135deg,#f5d060,#e09010);
-      color:#1a0900;font-size:1.3rem;font-weight:900;cursor:pointer;
-      letter-spacing:.06em;box-shadow:0 6px 28px rgba(245,208,96,.32);
-      -webkit-tap-highlight-color:transparent;transition:transform .1s;
-    }
+    #np-start{width:100%;padding:18px;border:none;border-radius:12px;background:linear-gradient(135deg,#f5d060,#e09010);color:#1a0900;font-size:1.3rem;font-weight:900;cursor:pointer;letter-spacing:.06em;box-shadow:0 6px 28px rgba(245,208,96,.32);-webkit-tap-highlight-color:transparent;transition:transform .1s;}
     #np-start:active{transform:scale(.96);}
 
-    /* ── SCREEN 2: APP ── */
+    /* ── SCREEN 2: 3D APP ── */
     #s-app{position:fixed;inset:0;display:none;overflow:hidden;}
-    /* 130%にして周囲15%の余白を確保し、ジャイロ傾きで平行移動するパララックス用 */
-    #app-bg{
-      position:absolute;width:130%;height:130%;top:-15%;left:-15%;
-      object-fit:cover;z-index:0;will-change:transform;
-      transition:transform 0.08s linear;
-    }
-    #app-cam{position:absolute;inset:0;width:100%;height:100%;z-index:1;opacity:0;}
 
-    /* grab-zone hint ring */
-    #grab-ring{
-      position:absolute;inset:0;z-index:2;
-      display:flex;align-items:center;justify-content:center;
-      pointer-events:none;
-      transition:opacity .5s;
-    }
-    .ring{
-      position:absolute;
-      width:clamp(200px,62vw,290px);height:clamp(120px,38vw,175px);
-      border-radius:50%;border:2px dashed rgba(245,208,96,.38);
-      animation:ring-pulse 2.5s ease-in-out infinite;
-    }
-    @keyframes ring-pulse{
-      0%,100%{opacity:.55;transform:scale(1);}
-      50%{opacity:.15;transform:scale(1.09);}
-    }
-
-    /* bill */
-    #bill-stage{
-      position:absolute;inset:0;z-index:2;
-      display:flex;align-items:center;justify-content:center;
-      pointer-events:none;
-    }
-    #bill-wrap{
-      position:relative;transform-origin:center center;will-change:transform;
-    }
-    @keyframes bill-float{
-      0%,100%{transform:translateY(0);}
-      50%{transform:translateY(-10px);}
-    }
-    #bill-img{
-      width:clamp(170px,54vw,250px);display:block;
-      filter:drop-shadow(0 16px 40px rgba(0,0,0,.75));
-      animation:bill-float 3s ease-in-out infinite;
-    }
-    #bill-wrap.grabbed #bill-img{
-      animation:none;
-      filter:drop-shadow(0 16px 40px rgba(0,0,0,.75))
-             drop-shadow(0 0 26px rgba(245,208,96,.7));
-    }
-    #bill-lbl{
-      position:absolute;bottom:-44px;left:50%;transform:translateX(-50%);
-      background:rgba(0,0,0,.82);border:1px solid rgba(245,208,96,.48);
-      border-radius:8px;padding:6px 18px;
-      color:#f5d060;font-size:clamp(.92rem,3.5vw,1.2rem);font-weight:700;
-      white-space:nowrap;
-    }
-
-    /* lift bar (right) */
-    #lift-bar{
-      position:absolute;right:13px;top:50%;transform:translateY(-50%);
-      z-index:3;display:flex;flex-direction:column;align-items:center;gap:5px;
-    }
-    #lift-track{
-      width:10px;height:150px;
-      background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.17);
-      border-radius:6px;position:relative;overflow:hidden;
-    }
-    #lift-fill{
-      position:absolute;bottom:0;width:100%;
-      background:linear-gradient(to top,#f5d060,#ff8800);
-      border-radius:6px;transition:height .08s;
-    }
+    /* UI overlays */
+    #lift-bar{position:absolute;right:13px;top:50%;transform:translateY(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:5px;}
+    #lift-track{width:10px;height:150px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.17);border-radius:6px;position:relative;overflow:hidden;}
+    #lift-fill{position:absolute;bottom:0;width:100%;background:linear-gradient(to top,#f5d060,#ff8800);border-radius:6px;transition:height .08s;}
     #lift-lbl{color:rgba(255,255,255,.55);font-size:.58rem;text-align:center;}
 
-    /* scale readout (left) */
-    #scale-box{
-      position:absolute;left:13px;top:50%;transform:translateY(-50%);
-      z-index:3;background:rgba(0,0,0,.65);
-      border:1px solid rgba(245,208,96,.28);border-radius:10px;
-      padding:10px 11px;color:#f5d060;
-      font-size:1.1rem;font-weight:700;text-align:center;min-width:52px;
-    }
+    #scale-box{position:absolute;left:13px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,.65);border:1px solid rgba(245,208,96,.28);border-radius:10px;padding:10px 11px;color:#f5d060;font-size:1.1rem;font-weight:700;text-align:center;min-width:52px;}
     #scale-box small{display:block;font-size:.58rem;color:rgba(255,255,255,.45);font-weight:400;}
 
-    /* status bar */
-    #status{
-      position:absolute;top:14px;left:50%;transform:translateX(-50%);
-      z-index:3;background:rgba(0,0,0,.72);
-      border:1px solid rgba(255,255,255,.14);border-radius:20px;
-      padding:7px 18px;color:#fff;font-size:.84rem;
-      white-space:nowrap;max-width:90vw;text-align:center;
-    }
+    #status{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:3;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:7px 18px;color:#fff;font-size:.84rem;white-space:nowrap;max-width:90vw;text-align:center;}
 
-    /* pinch marker */
-    #pinch-dot{
-      position:absolute;z-index:4;
-      width:32px;height:32px;border-radius:50%;
-      border:2.5px solid #f5d060;background:rgba(245,208,96,.22);
-      transform:translate(-50%,-50%);
-      display:none;pointer-events:none;
-      box-shadow:0 0 14px rgba(245,208,96,.5);
-    }
+    #bill-lbl{position:absolute;z-index:3;background:rgba(0,0,0,.82);border:1px solid rgba(245,208,96,.48);border-radius:8px;padding:5px 14px;color:#f5d060;font-size:clamp(.9rem,3.5vw,1.1rem);font-weight:700;white-space:nowrap;transform:translateX(-50%);pointer-events:none;display:none;}
 
-    /* back button */
-    #btn-back{
-      position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
-      z-index:5;background:rgba(0,0,0,.65);
-      border:1px solid rgba(255,255,255,.22);border-radius:22px;
-      color:rgba(255,255,255,.85);font-size:.9rem;padding:9px 26px;
-      cursor:pointer;-webkit-tap-highlight-color:transparent;
-    }
+    #pinch-dot{position:absolute;z-index:4;width:32px;height:32px;border-radius:50%;border:2.5px solid #f5d060;background:rgba(245,208,96,.22);transform:translate(-50%,-50%);display:none;pointer-events:none;box-shadow:0 0 14px rgba(245,208,96,.5);}
+
+    #btn-back{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.22);border-radius:22px;color:rgba(255,255,255,.85);font-size:.9rem;padding:9px 26px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
     #btn-back:active{opacity:.65;}
 
-    /* loading overlay */
-    #loading-ovl{
-      position:absolute;inset:0;z-index:10;
-      background:rgba(0,0,0,.82);
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:14px;color:#fff;font-size:.9rem;
-    }
-    .spinner{
-      width:44px;height:44px;
-      border:4px solid rgba(245,208,96,.22);border-top-color:#f5d060;
-      border-radius:50%;animation:spin .9s linear infinite;
-    }
+    #loading-ovl{position:absolute;inset:0;z-index:10;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;font-size:.9rem;}
+    .spinner{width:44px;height:44px;border:4px solid rgba(245,208,96,.22);border-top-color:#f5d060;border-radius:50%;animation:spin .9s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
     #loading-ovl.hidden{display:none;}
   </style>
@@ -211,401 +65,492 @@
   <div class="np-bg"></div>
   <div class="np-inner">
     <div class="np-title">💴 Money Lifter</div>
-    <div class="np-sub">金額を入力してお金を持ち上げよう</div>
-
-    <div id="np-disp">
-      <span id="np-disp-num">0</span>
-      <span class="np-yen">円</span>
-    </div>
-
+    <div class="np-sub">財布の中のお金を持ち上げよう</div>
+    <div id="np-disp"><span id="np-disp-num">0</span><span class="np-yen">円</span></div>
     <div id="np-grid">
-      <button class="nk" data-v="7">7</button>
-      <button class="nk" data-v="8">8</button>
-      <button class="nk" data-v="9">9</button>
-      <button class="nk" data-v="4">4</button>
-      <button class="nk" data-v="5">5</button>
-      <button class="nk" data-v="6">6</button>
-      <button class="nk" data-v="1">1</button>
-      <button class="nk" data-v="2">2</button>
-      <button class="nk" data-v="3">3</button>
-      <button class="nk nk-clr" data-v="C">C</button>
-      <button class="nk" data-v="0">0</button>
-      <button class="nk nk-del" data-v="DEL">⌫</button>
+      <button class="nk" data-v="7">7</button><button class="nk" data-v="8">8</button><button class="nk" data-v="9">9</button>
+      <button class="nk" data-v="4">4</button><button class="nk" data-v="5">5</button><button class="nk" data-v="6">6</button>
+      <button class="nk" data-v="1">1</button><button class="nk" data-v="2">2</button><button class="nk" data-v="3">3</button>
+      <button class="nk nk-clr" data-v="C">C</button><button class="nk" data-v="0">0</button><button class="nk nk-del" data-v="DEL">⌫</button>
     </div>
-
     <div class="np-presets">
       <button class="np-pre" data-pre="1000">¥1,000</button>
       <button class="np-pre" data-pre="5000">¥5,000</button>
       <button class="np-pre" data-pre="10000">¥10,000</button>
     </div>
-
     <button id="np-start">スタート →</button>
   </div>
 </div>
 
-<!-- ════ SCREEN 2: APP ════ -->
+<!-- ════ SCREEN 2: 3D APP ════ -->
 <div id="s-app">
-  <img id="app-bg" src="Gemini_Generated_Image_qfe5buqfe5buqfe5.png" alt="">
-  <canvas id="app-cam"></canvas>
-
-  <div id="grab-ring"><div class="ring"></div></div>
-
-  <div id="bill-stage">
-    <div id="bill-wrap">
-      <img id="bill-img" src="money005.png" alt="お札">
-      <div id="bill-lbl">¥10,000</div>
-    </div>
-  </div>
-
-  <div id="lift-bar">
-    <div id="lift-track"><div id="lift-fill" style="height:0%"></div></div>
-    <div id="lift-lbl">LIFT</div>
-  </div>
-
-  <div id="scale-box">
-    <span id="scale-num">1.00</span>
-    <small>× 倍率</small>
-  </div>
-
-  <div id="status">カメラ起動中...</div>
+  <!-- Three.js canvas injected here by JS -->
+  <div id="lift-bar"><div id="lift-track"><div id="lift-fill" style="height:0%"></div></div><div id="lift-lbl">LIFT</div></div>
+  <div id="scale-box"><span id="scale-num">1.00</span><small>× 倍率</small></div>
+  <div id="status">読み込み中...</div>
+  <div id="bill-lbl">¥10,000</div>
   <div id="pinch-dot"></div>
   <button id="btn-back">← 戻る</button>
-
-  <div id="loading-ovl">
-    <div class="spinner"></div>
-    <div>ハンドトラッキング初期化中...</div>
-    <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:4px;">初回は少し時間がかかります</div>
-  </div>
+  <div id="loading-ovl"><div class="spinner"></div><div>財布を準備中...</div></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
 <script>
 'use strict';
 
-/* ── DOM refs ──────────────────────────────────── */
+/* ── DOM ── */
 const sNumpad    = document.getElementById('s-numpad');
 const sApp       = document.getElementById('s-app');
 const npDispNum  = document.getElementById('np-disp-num');
-const billWrap   = document.getElementById('bill-wrap');
-const billLbl    = document.getElementById('bill-lbl');
+const billLblEl  = document.getElementById('bill-lbl');
 const statusEl   = document.getElementById('status');
 const pinchDot   = document.getElementById('pinch-dot');
-const camCanvas  = document.getElementById('app-cam');
 const liftFill   = document.getElementById('lift-fill');
 const scaleNum   = document.getElementById('scale-num');
-const grabRing   = document.getElementById('grab-ring');
 const loadingOvl = document.getElementById('loading-ovl');
-const appBgEl    = document.getElementById('app-bg');
-const camCtx     = camCanvas.getContext('2d');
 
-/* ── Numpad logic ──────────────────────────────── */
+/* ── Numpad ── */
 let rawStr = '0';
-
-function refreshDisp() {
-  npDispNum.textContent = (parseInt(rawStr, 10) || 0).toLocaleString('ja-JP');
-}
-
+function refreshDisp() { npDispNum.textContent = (parseInt(rawStr,10)||0).toLocaleString('ja-JP'); }
 document.querySelectorAll('.nk').forEach(btn => {
   btn.addEventListener('click', () => {
     const v = btn.dataset.v;
-    if      (v === 'DEL') rawStr = rawStr.length > 1 ? rawStr.slice(0, -1) : '0';
-    else if (v === 'C')   rawStr = '0';
-    else {
-      if (rawStr === '0') rawStr = v;
-      else if (rawStr.length < 9) rawStr += v;
-    }
+    if (v==='DEL') rawStr = rawStr.length>1 ? rawStr.slice(0,-1) : '0';
+    else if (v==='C') rawStr = '0';
+    else { if (rawStr==='0') rawStr=v; else if (rawStr.length<9) rawStr+=v; }
     refreshDisp();
   });
 });
-
 document.querySelectorAll('.np-pre').forEach(btn => {
-  btn.addEventListener('click', () => { rawStr = btn.dataset.pre; refreshDisp(); });
+  btn.addEventListener('click', () => { rawStr=btn.dataset.pre; refreshDisp(); });
 });
-
 document.getElementById('np-start').addEventListener('click', () => {
-  const amt = parseInt(rawStr, 10) || 0;
-  if (amt <= 0) { alert('金額を入力してください'); return; }
+  const amt = parseInt(rawStr,10)||0;
+  if (amt<=0) { alert('金額を入力してください'); return; }
   startApp(amt);
 });
-
 document.getElementById('btn-back').addEventListener('click', stopApp);
 
-/* ── Scale formula ─────────────────────────────────
-   反比例: scale_max = 1 + 5000/amount
-   5000円→2.0, 10000円→1.5, 20000円→1.25 (仕様の近似値)
-─────────────────────────────────────────────────── */
-function calcMaxScale(amount) {
-  return Math.min(1 + 5000 / Math.max(amount, 50), 6.0);
+/* ── Lift formula: inversely proportional to amount
+   5000円→maxLift=3.0, 10000円→1.5, 20000円→0.75  ── */
+function calcMaxLift(amount) {
+  return Math.min(15000 / Math.max(amount,50), 4.5);
 }
+function fmtJPY(n) { return '¥'+n.toLocaleString('ja-JP'); }
 
-function fmtJPY(n) {
-  return '¥' + n.toLocaleString('ja-JP');
-}
-
-/* ── App state ─────────────────────────────────── */
+/* ── App state ── */
 let currentAmt  = 0;
-let maxSc       = 1.5;
-let animSc      = 1.0;
-let targetSc    = 1.0;
+let maxLift     = 1.5;
+let liftFrac    = 0;
+let animLift    = 0;
 let isGrabbing  = false;
 let wasPinching = false;
 let grabHandSz  = 0;
-let liftFrac    = 0;
 
-// ジャイロ／パララックス state
-let rawTiltX   = 0, rawTiltY   = 0;   // deviceorientation: gamma / beta
-let smoothTX   = 0, smoothTY   = 0;   // EMA平滑化済み
-let tiltBaseX  = 0, tiltBaseY  = 0;   // 掴んだ瞬間の基準値
-const CD_BASE  = 1.2;                  // 基本C/D比（lift=0時のオフセット感度）
-const TILT_PX  = 5.0;                  // 1°あたりの最大ピクセル移動量
-let gyroActive = false;
+let rawTiltX=0, rawTiltY=0, smoothTX=0, smoothTY=0;
+let tiltBaseX=0, tiltBaseY=0;
+const CD_BASE   = 1.2;
+const TILT_SENS = 0.6;
+let gyroActive  = false;
 
-let mpHands    = null;
-let mpCamera   = null;
-let hidVid     = null;
-let rafHandle  = null;
+let mpHands=null, mpCamera=null, hidVid=null, rafHandle=null;
 
-/* ── Start / Stop ──────────────────────────────── */
+/* ── Three.js state ── */
+let scene3, cam3, renderer3;
+let billMesh=null, billShadow=null;
+let billReady = false;
+const BILL_REST_Y = 0.12;
+const CAM_BASE    = new THREE.Vector3(0, 6.2, 4.6);
+
+/* ── Start / Stop ── */
 function startApp(amount) {
   currentAmt  = amount;
-  maxSc       = calcMaxScale(amount);
-  animSc      = 1.0;
-  targetSc    = 1.0;
+  maxLift     = calcMaxLift(amount);
+  liftFrac    = 0;
+  animLift    = BILL_REST_Y;
   isGrabbing  = false;
   wasPinching = false;
-  liftFrac    = 0;
+  rawTiltX=rawTiltY=smoothTX=smoothTY=0;
 
-  billLbl.textContent         = fmtJPY(amount);
-  billWrap.classList.remove('grabbed');
-  billWrap.style.transform    = 'scale(1)';
-  liftFill.style.height       = '0%';
-  scaleNum.textContent        = '1.00';
-  grabRing.style.opacity      = '1';
+  billLblEl.textContent = fmtJPY(amount);
+  billLblEl.style.display = 'none';
   loadingOvl.classList.remove('hidden');
-  statusEl.textContent        = 'カメラ起動中...';
+  statusEl.textContent = '財布を準備中...';
 
   sNumpad.style.display = 'none';
   sApp.style.display    = 'block';
 
-  // Safety: hide loading after 25s if camera never starts
-  setTimeout(() => loadingOvl.classList.add('hidden'), 25000);
-
-  initGyro();   // ジャイロ権限取得（iOS: startApp はボタン tap 起点なので OK）
+  initScene();
+  initGyro();
   initMP();
   rafHandle = requestAnimationFrame(renderLoop);
 }
 
 function stopApp() {
   cancelAnimationFrame(rafHandle);
-  if (mpCamera) { try { mpCamera.stop(); } catch(_){} mpCamera = null; }
-  if (hidVid)   {
-    try { hidVid.srcObject && hidVid.srcObject.getTracks().forEach(t => t.stop()); } catch(_){}
-    hidVid.remove(); hidVid = null;
-  }
-  if (mpHands)  { try { mpHands.close(); } catch(_){} mpHands = null; }
-  // 背景リセット
-  rawTiltX = rawTiltY = smoothTX = smoothTY = 0;
-  appBgEl.style.transform = '';
+  if (renderer3) { renderer3.dispose(); renderer3.domElement.remove(); renderer3=null; }
+  scene3=null; cam3=null; billMesh=null; billShadow=null; billReady=false;
+  if (mpCamera) { try{mpCamera.stop();}catch(_){} mpCamera=null; }
+  if (hidVid)   { try{hidVid.srcObject&&hidVid.srcObject.getTracks().forEach(t=>t.stop());}catch(_){} hidVid.remove(); hidVid=null; }
+  if (mpHands)  { try{mpHands.close();}catch(_){} mpHands=null; }
+  rawTiltX=rawTiltY=smoothTX=smoothTY=0;
   sApp.style.display    = 'none';
   sNumpad.style.display = 'flex';
 }
 
-/* ── Gyroscope init ────────────────────────────── */
-function initGyro() {
-  if (gyroActive) return;
-  const handler = e => {
-    rawTiltX = e.gamma != null ? e.gamma : 0;  // 左右: -90..90°
-    rawTiltY = e.beta  != null ? e.beta  : 0;  // 前後: -180..180°
-  };
-  if (typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function') {
-    // iOS 13+ は明示的な権限が必要
-    DeviceOrientationEvent.requestPermission()
-      .then(s => {
-        if (s === 'granted') {
-          window.addEventListener('deviceorientation', handler, true);
-          gyroActive = true;
-        }
-      })
-      .catch(() => {});
-  } else {
-    // Android / 旧 iOS: 自動で取得可能
-    window.addEventListener('deviceorientation', handler, true);
-    gyroActive = true;
+/* ════════════════════════════════
+   THREE.JS SCENE
+════════════════════════════════ */
+function initScene() {
+  scene3 = new THREE.Scene();
+  scene3.background = new THREE.Color(0x06030a);
+  scene3.fog = new THREE.FogExp2(0x06030a, 0.07);
+
+  cam3 = new THREE.PerspectiveCamera(44, window.innerWidth/window.innerHeight, 0.1, 60);
+  cam3.position.copy(CAM_BASE);
+  cam3.lookAt(0, 0, 0);
+
+  renderer3 = new THREE.WebGLRenderer({ antialias: true });
+  renderer3.setSize(window.innerWidth, window.innerHeight);
+  renderer3.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer3.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer3.toneMappingExposure = 1.15;
+  renderer3.domElement.style.cssText = 'position:absolute;inset:0;z-index:0;';
+  sApp.insertBefore(renderer3.domElement, sApp.firstChild);
+
+  /* ── Lighting ── */
+  scene3.add(new THREE.AmbientLight(0xffd8a0, 0.5));
+
+  const sun = new THREE.DirectionalLight(0xfff0d0, 1.5);
+  sun.position.set(3, 9, 5);
+  scene3.add(sun);
+
+  const fill = new THREE.PointLight(0xff9050, 0.8, 14);
+  fill.position.set(-2, 5, 2);
+  scene3.add(fill);
+
+  const rim = new THREE.PointLight(0xffc060, 0.5, 10);
+  rim.position.set(0, 3, -3);
+  scene3.add(rim);
+
+  /* ── Interior glow ── */
+  const glow = new THREE.PointLight(0xffd080, 0.4, 8);
+  glow.position.set(0, 1.5, 0);
+  scene3.add(glow);
+
+  buildWallet();
+  createBill();
+  createCoins();
+
+  window.addEventListener('resize', onResize3);
+}
+
+function onResize3() {
+  if (!cam3||!renderer3) return;
+  cam3.aspect = window.innerWidth/window.innerHeight;
+  cam3.updateProjectionMatrix();
+  renderer3.setSize(window.innerWidth, window.innerHeight);
+}
+
+/* ── Procedural leather texture ── */
+function makeLeatherTex(seed) {
+  const c=document.createElement('canvas'); c.width=c.height=512;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#240c01'; ctx.fillRect(0,0,512,512);
+  const rng=(s)=>{ s=Math.sin(s*127.1+seed)*43758.5453; return s-Math.floor(s); };
+  for (let i=0;i<16000;i++) {
+    const x=rng(i)*512, y=rng(i+1000)*512;
+    const a=rng(i+2000)*.14;
+    ctx.fillStyle=rng(i+3000)>.55?`rgba(210,130,65,${a})`:`rgba(0,0,0,${a*2})`;
+    ctx.fillRect(x,y,rng(i+4000)*2.5+.5,rng(i+5000)*1.5+.3);
+  }
+  for (let i=0;i<55;i++) {
+    const y=rng(i+6000)*512;
+    ctx.beginPath(); ctx.moveTo(0,y);
+    for (let x=0;x<512;x+=rng(i*7+x)*.01*20+8) ctx.lineTo(x,y+rng(i*13+x*.01)*3-1.5);
+    ctx.strokeStyle=`rgba(0,0,0,${rng(i+7000)*.07})`; ctx.lineWidth=rng(i+8000)+.3; ctx.stroke();
+  }
+  const t=new THREE.CanvasTexture(c);
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,2);
+  return t;
+}
+
+/* ── Procedural felt/lining texture ── */
+function makeFeltTex() {
+  const c=document.createElement('canvas'); c.width=c.height=256;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#5e4010'; ctx.fillRect(0,0,256,256);
+  for (let i=0;i<28000;i++) {
+    const r=Math.floor(Math.random()*60+160);
+    const g=Math.floor(Math.random()*40+110);
+    ctx.fillStyle=`rgba(${r},${g},0,${Math.random()*.055})`;
+    ctx.fillRect(Math.random()*256,Math.random()*256,1,1);
+  }
+  // stitching border drawn into felt texture
+  ctx.setLineDash([5,5]); ctx.strokeStyle='rgba(215,175,80,.55)'; ctx.lineWidth=1.8;
+  ctx.strokeRect(12,12,232,232); ctx.setLineDash([]);
+  const t=new THREE.CanvasTexture(c);
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(3,2);
+  return t;
+}
+
+/* ── Build wallet interior ── */
+function buildWallet() {
+  const lTex = makeLeatherTex(42);
+  const fTex = makeFeltTex();
+
+  const lMat = new THREE.MeshStandardMaterial({ map:lTex, color:0x3c1a07, roughness:.88, metalness:.03 });
+  const fMat = new THREE.MeshStandardMaterial({ map:fTex, color:0xb08830, roughness:.96, metalness:.0 });
+  const eMat = new THREE.MeshStandardMaterial({ color:0x50200a, roughness:.84, metalness:.06 });
+  const iMat = new THREE.MeshStandardMaterial({ color:0x9a7028, roughness:.95, metalness:.0 });
+
+  const W=7.8, D=5.2, wallH=1.2;
+
+  // Exterior base
+  const base = new THREE.Mesh(new THREE.BoxGeometry(W,0.32,D), lMat);
+  base.position.y = -0.16; scene3.add(base);
+
+  // Interior felt floor
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W-0.6, D-0.5), fMat);
+  floor.rotation.x = -Math.PI/2; floor.position.y = 0.006; scene3.add(floor);
+
+  // Walls (back, left, right, front-shorter)
+  const walls = [
+    { g: new THREE.BoxGeometry(W, wallH, 0.28),      p:[0, wallH/2, -D/2+.14],  iy:true, iw:W-0.6,  iz:false },
+    { g: new THREE.BoxGeometry(0.28, wallH, D),       p:[-W/2+.14, wallH/2, 0],  iy:false, iw:D,     iz:true  },
+    { g: new THREE.BoxGeometry(0.28, wallH, D),       p:[ W/2-.14, wallH/2, 0],  iy:false, iw:D,     iz:true  },
+    { g: new THREE.BoxGeometry(W, wallH*.45, 0.28),  p:[0, wallH*.225, D/2-.14], iy:true, iw:W-0.6,  iz:false },
+  ];
+
+  walls.forEach(w => {
+    const m = new THREE.Mesh(w.g, lMat); m.position.set(...w.p); scene3.add(m);
+    // top edge trim
+    const tw = w.g.parameters.width, td = w.g.parameters.depth;
+    const trim = new THREE.Mesh(new THREE.BoxGeometry(tw+.02, .06, td+.02), eMat);
+    trim.position.set(w.p[0], w.p[1]+w.g.parameters.height/2+.03, w.p[2]); scene3.add(trim);
+  });
+
+  // Inner wall liner (felt color on inner faces)
+  const liners = [
+    { size:[W-0.5, wallH],    pos:[0, wallH/2, -D/2+.3],   ry:0           },
+    { size:[D-0.0, wallH],    pos:[-W/2+.3, wallH/2, 0],   ry:Math.PI/2   },
+    { size:[D-0.0, wallH],    pos:[ W/2-.3, wallH/2, 0],   ry:-Math.PI/2  },
+  ];
+  liners.forEach(l => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(...l.size), iMat);
+    m.position.set(...l.pos); m.rotation.y = l.ry; scene3.add(m);
+  });
+
+  // Card slot dividers (decorative vertical strips on back wall)
+  for (let i=-1;i<=1;i+=2) {
+    const div = new THREE.Mesh(new THREE.BoxGeometry(.04, wallH*.9, .08), eMat);
+    div.position.set(i*1.5, wallH*.45, -D/2+.28); scene3.add(div);
   }
 }
 
-/* ── MediaPipe init ────────────────────────────── */
+/* ── Bill ── */
+function createBill() {
+  const loader = new THREE.TextureLoader();
+  const onLoad = tex => {
+    if (tex) tex.colorSpace = THREE.SRGBColorSpace;
+    const aspect = tex ? tex.image.width/tex.image.height : 1.6;
+    const bw = 3.4, bh = bw/aspect;
+
+    const geom = new THREE.PlaneGeometry(bw, bh);
+    const mat  = new THREE.MeshStandardMaterial({
+      map: tex || null,
+      color: tex ? 0xffffff : 0xd4c98a,
+      roughness:.62, metalness:.0, side:THREE.DoubleSide
+    });
+
+    billMesh = new THREE.Mesh(geom, mat);
+    billMesh.rotation.x = -Math.PI/2;
+    billMesh.position.set(0.2, BILL_REST_Y, 0.3);
+    scene3.add(billMesh);
+
+    // Shadow blob
+    const sGeom = new THREE.PlaneGeometry(bw+.6, bh+.5);
+    const sMat  = new THREE.MeshBasicMaterial({ color:0x000000, transparent:true, opacity:.38, depthWrite:false });
+    billShadow  = new THREE.Mesh(sGeom, sMat);
+    billShadow.rotation.x = -Math.PI/2;
+    billShadow.position.set(0.2, 0.008, 0.3);
+    scene3.add(billShadow);
+
+    billReady = true;
+    billLblEl.style.display = 'block';
+    loadingOvl.classList.add('hidden');
+    statusEl.textContent = '手を映してピンチでつかもう';
+  };
+  loader.load('money005.png', onLoad, undefined, () => onLoad(null));
+}
+
+/* ── Coins ── */
+function createCoins() {
+  const coinDefs = [
+    { c:0xd4af37, m:.78, r:.23, h:.045, x:-1.9, z:-1.2 },
+    { c:0xd4af37, m:.76, r:.19, h:.04,  x:-2.4, z:-1.6 },
+    { c:0xc0c0c0, m:.66, r:.20, h:.04,  x: 2.2, z: 1.1 },
+    { c:0xb87333, m:.50, r:.18, h:.032, x: 2.5, z:-0.9 },
+    { c:0xc0c0c0, m:.66, r:.16, h:.03,  x: 1.8, z: 1.5 },
+    { c:0xd4af37, m:.80, r:.25, h:.05,  x:-2.5, z: 0.9 },
+    { c:0xb87333, m:.48, r:.16, h:.03,  x: 1.6, z:-1.4 },
+    { c:0xd4af37, m:.75, r:.18, h:.04,  x:-1.3, z: 1.6 },
+    { c:0xc0c0c0, m:.62, r:.21, h:.038, x: 0.9, z:-1.6 },
+  ];
+  coinDefs.forEach(cd => {
+    const geom = new THREE.CylinderGeometry(cd.r, cd.r, cd.h, 40);
+    const mat  = new THREE.MeshStandardMaterial({ color:cd.c, metalness:cd.m, roughness:1-cd.m*.55 });
+    const coin = new THREE.Mesh(geom, mat);
+    coin.position.set(cd.x, cd.h/2+.005, cd.z);
+    coin.rotation.y = Math.random()*Math.PI;
+    scene3.add(coin);
+  });
+}
+
+/* ── Gyroscope ── */
+function initGyro() {
+  if (gyroActive) return;
+  const handler = e => { rawTiltX=e.gamma??0; rawTiltY=e.beta??0; };
+  if (typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function') {
+    DeviceOrientationEvent.requestPermission().then(s=>{
+      if (s==='granted') { window.addEventListener('deviceorientation',handler,true); gyroActive=true; }
+    }).catch(()=>{});
+  } else {
+    window.addEventListener('deviceorientation',handler,true); gyroActive=true;
+  }
+}
+
+/* ── MediaPipe ── */
 function initMP() {
   hidVid = document.createElement('video');
-  hidVid.setAttribute('playsinline', '');
-  hidVid.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;';
+  hidVid.setAttribute('playsinline','');
+  hidVid.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;';
   document.body.appendChild(hidVid);
 
-  mpHands = new Hands({
-    locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`
-  });
-  mpHands.setOptions({
-    maxNumHands: 1,
-    modelComplexity: 1,
-    minDetectionConfidence: 0.65,
-    minTrackingConfidence: 0.55,
-  });
+  mpHands = new Hands({ locateFile: f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}` });
+  mpHands.setOptions({ maxNumHands:1, modelComplexity:1, minDetectionConfidence:.65, minTrackingConfidence:.55 });
   mpHands.onResults(onResults);
 
   mpCamera = new Camera(hidVid, {
-    onFrame: async () => {
-      // Sync canvas size to viewport
-      if (camCanvas.width !== window.innerWidth) {
-        camCanvas.width  = window.innerWidth;
-        camCanvas.height = window.innerHeight;
-      }
-      // Draw mirrored camera feed (front camera natural mirror)
-      camCtx.save();
-      camCtx.translate(camCanvas.width, 0);
-      camCtx.scale(-1, 1);
-      camCtx.drawImage(hidVid, 0, 0, camCanvas.width, camCanvas.height);
-      camCtx.restore();
-
-      await mpHands.send({ image: hidVid });
-    },
-    width: 640, height: 480,
-    facingMode: 'user',
+    onFrame: async () => { await mpHands.send({ image:hidVid }); },
+    width:640, height:480, facingMode:'user',
   });
-
-  mpCamera.start()
-    .then(() => {
-      loadingOvl.classList.add('hidden');
-      statusEl.textContent = '手を映して、ピンチでつかもう';
-    })
-    .catch(err => {
-      loadingOvl.classList.add('hidden');
-      statusEl.textContent = 'カメラエラー: ' + (err.message || String(err));
-    });
+  mpCamera.start().catch(err=>{
+    loadingOvl.classList.add('hidden');
+    statusEl.textContent='カメラエラー: '+(err.message||String(err));
+  });
 }
 
-/* ── Landmark helpers ──────────────────────────── */
-function d2(a, b) {
-  const dx = a.x - b.x, dy = a.y - b.y;
-  return Math.sqrt(dx*dx + dy*dy);
-}
-// Wrist(0)→Middle-MCP(9): scales with distance from camera
-function handSz(lm)    { return d2(lm[0], lm[9]); }
-// Thumb tip(4)→Index tip(8) / hand size
-function pinchRat(lm)  { const h = handSz(lm); return h > 1e-3 ? d2(lm[4], lm[8]) / h : 1; }
-// Midpoint of thumb/index tips (normalized coords)
-function pinchCtr(lm)  { return { x: (lm[4].x + lm[8].x) / 2, y: (lm[4].y + lm[8].y) / 2 }; }
+/* ── Landmark helpers ── */
+function d2(a,b){const dx=a.x-b.x,dy=a.y-b.y;return Math.sqrt(dx*dx+dy*dy);}
+function handSz(lm)   { return d2(lm[0],lm[9]); }
+function pinchRat(lm) { const h=handSz(lm); return h>1e-3?d2(lm[4],lm[8])/h:1; }
+function pinchCtr(lm) { return {x:(lm[4].x+lm[8].x)/2,y:(lm[4].y+lm[8].y)/2}; }
 
-/* ── Hand results callback ─────────────────────── */
+/* ── Bill projected screen position ── */
+function billScreenPos() {
+  if (!billMesh||!cam3) return {x:window.innerWidth/2,y:window.innerHeight/2};
+  const p = billMesh.position.clone().project(cam3);
+  return { x:(p.x+1)/2*window.innerWidth, y:(-p.y+1)/2*window.innerHeight };
+}
+
+/* ── Hand results ── */
 function onResults(res) {
   const lmArr = res.multiHandLandmarks;
-
-  if (!lmArr || lmArr.length === 0) {
-    if (isGrabbing) {
-      isGrabbing = false;
-      billWrap.classList.remove('grabbed');
-      grabRing.style.opacity = '1';
-      statusEl.textContent = '手が見えません… もう一度かざしてください';
-    }
-    wasPinching = false;
-    targetSc    = 1.0;
-    liftFrac    = 0;
-    pinchDot.style.display = 'none';
-    return;
+  if (!lmArr||lmArr.length===0) {
+    if (isGrabbing) { isGrabbing=false; statusEl.textContent='手が見えません… もう一度かざしてください'; }
+    wasPinching=false; liftFrac=0; pinchDot.style.display='none'; return;
   }
 
-  const lm       = lmArr[0];
-  const pr       = pinchRat(lm);
-  const hs       = handSz(lm);
-  const pc       = pinchCtr(lm);
-  // ヒステリシス: 掴み開始は厳しめ(0.24)、解除は緩め(0.36)
-  // → 手が動いても閾値付近でバタつかず保持できる
+  const lm=lmArr[0], pr=pinchRat(lm), hs=handSz(lm), pc=pinchCtr(lm);
   const pinchThresh = isGrabbing ? 0.36 : 0.24;
   const pinching    = pr < pinchThresh;
 
-  // Mirror x for display (front camera)
-  const sx = (1 - pc.x) * window.innerWidth;
-  const sy = pc.y * window.innerHeight;
+  const sx=(1-pc.x)*window.innerWidth, sy=pc.y*window.innerHeight;
+  pinchDot.style.display=pinching?'block':'none';
+  if (pinching){pinchDot.style.left=sx+'px';pinchDot.style.top=sy+'px';}
 
-  pinchDot.style.display = pinching ? 'block' : 'none';
-  if (pinching) { pinchDot.style.left = sx + 'px'; pinchDot.style.top = sy + 'px'; }
-
-  // ── Pinch START ──
-  if (pinching && !wasPinching) {
-    // MediaPipe coords are video-space (not mirrored), bill is at center (0.5, 0.5)
-    const nearCenter = Math.abs(pc.x - 0.5) < 0.32 && Math.abs(pc.y - 0.5) < 0.35;
-    if (nearCenter && !isGrabbing) {
-      isGrabbing             = true;
-      grabHandSz             = hs;
-      tiltBaseX              = smoothTX;  // 掴んだ瞬間の傾きを基準にする
-      tiltBaseY              = smoothTY;
-      grabRing.style.opacity = '0';
-      billWrap.classList.add('grabbed');
-      statusEl.textContent = '✊ つかんだ！スマホを傾けて奥行きを感じよう！';
+  // Pinch START
+  if (pinching&&!wasPinching&&!isGrabbing&&billReady) {
+    const bp=billScreenPos();
+    if (Math.hypot(sx-bp.x, sy-bp.y)<140) {
+      isGrabbing=true; grabHandSz=hs;
+      tiltBaseX=smoothTX; tiltBaseY=smoothTY;
+      statusEl.textContent='✊ つかんだ！スマホから手を遠ざけよう！';
     }
   }
-
-  // ── Pinch END ──
-  if (!pinching && wasPinching) {
-    if (isGrabbing) {
-      isGrabbing             = false;
-      billWrap.classList.remove('grabbed');
-      grabRing.style.opacity = '1';
-      statusEl.textContent   = '手を映して、ピンチでつかもう';
-    }
+  // Pinch END
+  if (!pinching&&wasPinching&&isGrabbing) {
+    isGrabbing=false; statusEl.textContent='手を映してピンチでつかもう';
   }
+  wasPinching=pinching;
 
-  wasPinching = pinching;
-
-  // ── Scale update while grabbing ──
-  if (isGrabbing && pinching) {
-    // sizeRatio < 1 → hand moved away from camera (away from phone)
-    const szRatio = hs / Math.max(grabHandSz, 1e-4);
-    // 25% size decrease ≈ 10cm of movement at typical phone distance
-    liftFrac = Math.min(Math.max(0, (1 - szRatio) / 0.25), 1.0);
-    targetSc = 1.0 + (maxSc - 1.0) * liftFrac;
+  if (isGrabbing&&pinching) {
+    const szRatio=hs/Math.max(grabHandSz,1e-4);
+    liftFrac=Math.min(Math.max(0,(1-szRatio)/.25),1.0);
   } else if (!isGrabbing) {
-    targetSc = 1.0;
-    liftFrac = 0;
+    liftFrac=0;
   }
 }
 
-/* ── Render loop ───────────────────────────────── */
+/* ── Render loop ── */
+const _tmpVec = new THREE.Vector3();
 function renderLoop() {
-  if (sApp.style.display !== 'block') return;
+  if (sApp.style.display!=='block') return;
 
-  // ── お札スケール lerp ──
-  animSc += (targetSc - animSc) * 0.12;
-  billWrap.style.transform = 'scale(' + animSc.toFixed(4) + ')';
+  /* Smooth gyro */
+  smoothTX+=(rawTiltX-smoothTX)*.15;
+  smoothTY+=(rawTiltY-smoothTY)*.15;
 
-  // Lift bar
-  const pct = maxSc > 1 ? ((animSc - 1) / (maxSc - 1)) * 100 : 0;
-  liftFill.style.height = Math.min(pct, 100).toFixed(1) + '%';
-  scaleNum.textContent  = animSc.toFixed(2);
+  /* Bill lift (lerp) */
+  const idle = !isGrabbing ? Math.sin(Date.now()*.0018)*.05 : 0;
+  const targetY = BILL_REST_Y + liftFrac*maxLift + idle;
+  animLift += (targetY-animLift)*.12;
 
-  // ── 背景パララックス（ジャイロ × liftFrac） ──
-  // tilt の EMA 平滑化（α=0.15: 高速すぎず滑らか）
-  smoothTX += (rawTiltX - smoothTX) * 0.15;
-  smoothTY += (rawTiltY - smoothTY) * 0.15;
+  if (billMesh) {
+    billMesh.position.y = animLift;
+    // subtle rock when lifted
+    billMesh.rotation.z = isGrabbing ? liftFrac*Math.sin(Date.now()*.002)*.06 : 0;
 
-  // 掴んだ瞬間の角度を基準とした偏差
-  const dX = smoothTX - tiltBaseX;  // 左右傾き偏差 (°)
-  const dY = smoothTY - tiltBaseY;  // 前後傾き偏差 (°)
+    // shadow: shrinks and fades as bill rises
+    if (billShadow) {
+      const sf=1-liftFrac*.4;
+      billShadow.scale.set(sf,sf,1);
+      billShadow.material.opacity=.38*(1-liftFrac*.78);
+    }
 
-  // C/D比: liftFrac が増えるほど比率が下がり（応答が増幅）、奥行き感が強まる
-  //   liftFrac=0 → CD=∞（動かない）  liftFrac=1 → CD=CD_BASE
-  const cdEffective = CD_BASE / Math.max(liftFrac, 0.001);
+    // Bill label follow 3D position
+    if (billLblEl.style.display!=='none') {
+      const bp=billScreenPos();
+      billLblEl.style.left=bp.x+'px';
+      billLblEl.style.top=(bp.y+55)+'px';
+    }
 
-  // ピクセル移動量 = 偏差(°) × 感度 / CD比 × liftFrac（lift中のみ有効）
-  const maxPad = window.innerWidth * 0.12;  // 背景余白の最大利用量
-  const bgX = Math.max(-maxPad, Math.min(maxPad, (dX / cdEffective) * TILT_PX * liftFrac));
-  const bgY = Math.max(-maxPad, Math.min(maxPad, (dY / cdEffective) * TILT_PX * liftFrac * 0.5));
+    // Scale readout from perspective projection
+    const distRest = CAM_BASE.y - BILL_REST_Y;
+    const distNow  = Math.max(CAM_BASE.y - billMesh.position.y, 0.5);
+    const projSc   = distRest/distNow;
+    const pct      = liftFrac*100;
+    liftFill.style.height=pct.toFixed(1)+'%';
+    scaleNum.textContent=projSc.toFixed(2);
+  }
 
-  // 背景を傾きと逆方向へ（視差の自然な方向）
-  appBgEl.style.transform = `translate(${-bgX}px, ${-bgY}px)`;
+  /* Gyro camera parallax — C/D ratio decreases as lift increases → depth intensifies */
+  if (cam3) {
+    const dTX=smoothTX-tiltBaseX, dTY=smoothTY-tiltBaseY;
+    const cd=CD_BASE/Math.max(liftFrac,.01);
+    const maxShift=1.8;
+    const cx=Math.max(-maxShift,Math.min(maxShift,(dTX/cd)*TILT_SENS*liftFrac));
+    const cz=Math.max(-maxShift,Math.min(maxShift,(dTY/cd)*TILT_SENS*.5*liftFrac));
+    cam3.position.x = CAM_BASE.x+cx;
+    cam3.position.z = CAM_BASE.z+cz;
+    cam3.lookAt(0,0,0);
+  }
 
-  rafHandle = requestAnimationFrame(renderLoop);
+  if (renderer3&&scene3&&cam3) renderer3.render(scene3,cam3);
+  rafHandle=requestAnimationFrame(renderLoop);
 }
 </script>
 </body>
