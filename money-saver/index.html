@@ -7,53 +7,52 @@
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
     html,body{width:100%;height:100%;overflow:hidden;}
-    body{background:#0a0510;font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;touch-action:manipulation;}
+    body{background:#080808;font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;touch-action:manipulation;}
 
     /* ── SCREEN 1: NUMPAD ── */
     #s-numpad{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-    .np-bg{position:absolute;inset:0;background:#1a0a02;background-image:repeating-linear-gradient(0deg,transparent,transparent 18px,rgba(255,180,80,.04) 18px,rgba(255,180,80,.04) 19px),repeating-linear-gradient(90deg,transparent,transparent 18px,rgba(255,180,80,.04) 18px,rgba(255,180,80,.04) 19px);}
+    .np-bg{position:absolute;inset:0;background:#0d0d0d;background-image:repeating-linear-gradient(0deg,transparent,transparent 22px,rgba(212,170,85,.04) 22px,rgba(212,170,85,.04) 23px),repeating-linear-gradient(90deg,transparent,transparent 22px,rgba(212,170,85,.04) 22px,rgba(212,170,85,.04) 23px);}
     .np-inner{position:relative;z-index:1;width:min(360px,94vw);display:flex;flex-direction:column;align-items:center;gap:13px;}
-    .np-title{font-size:clamp(1.5rem,6vw,2rem);font-weight:900;color:#f5d060;text-shadow:0 2px 16px rgba(245,208,96,.5);letter-spacing:.06em;}
-    .np-sub{color:rgba(255,255,255,.5);font-size:.82rem;}
-    #np-disp{width:100%;background:rgba(0,0,0,.78);border:2px solid rgba(245,208,96,.5);border-radius:12px;padding:12px 18px;display:flex;align-items:baseline;justify-content:flex-end;gap:6px;}
-    #np-disp-num{font-size:clamp(1.8rem,8vw,2.7rem);font-weight:700;color:#f5d060;letter-spacing:1px;}
-    .np-yen{font-size:1rem;color:rgba(245,208,96,.6);}
+    .np-title{font-size:clamp(1.5rem,6vw,2rem);font-weight:900;color:#d4aa55;text-shadow:0 2px 18px rgba(212,170,85,.45);letter-spacing:.06em;}
+    .np-sub{color:rgba(255,255,255,.45);font-size:.82rem;}
+    #np-disp{width:100%;background:rgba(0,0,0,.85);border:1.5px solid rgba(212,170,85,.45);border-radius:12px;padding:12px 18px;display:flex;align-items:baseline;justify-content:flex-end;gap:6px;}
+    #np-disp-num{font-size:clamp(1.8rem,8vw,2.7rem);font-weight:700;color:#d4aa55;letter-spacing:1px;}
+    .np-yen{font-size:1rem;color:rgba(212,170,85,.6);}
     #np-grid{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-    .nk{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:10px;color:#fff;font-size:clamp(1.3rem,5.5vw,1.9rem);font-weight:500;padding:16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .1s,transform .08s;}
-    .nk:active{background:rgba(245,208,96,.25);transform:scale(.92);}
+    .nk{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:10px;color:#fff;font-size:clamp(1.3rem,5.5vw,1.9rem);font-weight:500;padding:16px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .1s,transform .08s;}
+    .nk:active{background:rgba(212,170,85,.22);transform:scale(.92);}
     .nk-del{background:rgba(255,60,60,.09);border-color:rgba(255,60,60,.22);color:#ff7070;}
     .nk-del:active{background:rgba(255,60,60,.28);}
     .nk-clr{background:rgba(255,60,60,.06);border-color:rgba(255,60,60,.16);color:rgba(255,100,100,.85);font-size:1rem;}
     .nk-clr:active{background:rgba(255,60,60,.22);}
     .np-presets{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-    .np-pre{background:rgba(245,208,96,.1);border:1px solid rgba(245,208,96,.24);border-radius:8px;color:rgba(245,208,96,.85);font-size:.8rem;font-weight:600;padding:10px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .1s,transform .08s;}
-    .np-pre:active{background:rgba(245,208,96,.28);transform:scale(.93);}
-    #np-start{width:100%;padding:18px;border:none;border-radius:12px;background:linear-gradient(135deg,#f5d060,#e09010);color:#1a0900;font-size:1.3rem;font-weight:900;cursor:pointer;letter-spacing:.06em;box-shadow:0 6px 28px rgba(245,208,96,.32);-webkit-tap-highlight-color:transparent;transition:transform .1s;}
+    .np-pre{background:rgba(212,170,85,.1);border:1px solid rgba(212,170,85,.22);border-radius:8px;color:rgba(212,170,85,.85);font-size:.8rem;font-weight:600;padding:10px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .1s,transform .08s;}
+    .np-pre:active{background:rgba(212,170,85,.28);transform:scale(.93);}
+    #np-start{width:100%;padding:18px;border:none;border-radius:12px;background:linear-gradient(135deg,#d4aa55,#b88820);color:#0d0800;font-size:1.3rem;font-weight:900;cursor:pointer;letter-spacing:.06em;box-shadow:0 6px 28px rgba(212,170,85,.28);-webkit-tap-highlight-color:transparent;transition:transform .1s;}
     #np-start:active{transform:scale(.96);}
 
     /* ── SCREEN 2: 3D APP ── */
     #s-app{position:fixed;inset:0;display:none;overflow:hidden;}
 
-    /* UI overlays */
     #lift-bar{position:absolute;right:13px;top:50%;transform:translateY(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:5px;}
-    #lift-track{width:10px;height:150px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.17);border-radius:6px;position:relative;overflow:hidden;}
-    #lift-fill{position:absolute;bottom:0;width:100%;background:linear-gradient(to top,#f5d060,#ff8800);border-radius:6px;transition:height .08s;}
-    #lift-lbl{color:rgba(255,255,255,.55);font-size:.58rem;text-align:center;}
+    #lift-track{width:10px;height:150px;background:rgba(0,0,0,.55);border:1px solid rgba(212,170,85,.25);border-radius:6px;position:relative;overflow:hidden;}
+    #lift-fill{position:absolute;bottom:0;width:100%;background:linear-gradient(to top,#d4aa55,#ff9900);border-radius:6px;transition:height .08s;}
+    #lift-lbl{color:rgba(255,255,255,.45);font-size:.58rem;text-align:center;}
 
-    #scale-box{position:absolute;left:13px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,.65);border:1px solid rgba(245,208,96,.28);border-radius:10px;padding:10px 11px;color:#f5d060;font-size:1.1rem;font-weight:700;text-align:center;min-width:52px;}
-    #scale-box small{display:block;font-size:.58rem;color:rgba(255,255,255,.45);font-weight:400;}
+    #scale-box{position:absolute;left:13px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,.72);border:1px solid rgba(212,170,85,.25);border-radius:10px;padding:10px 11px;color:#d4aa55;font-size:1.1rem;font-weight:700;text-align:center;min-width:52px;}
+    #scale-box small{display:block;font-size:.58rem;color:rgba(255,255,255,.4);font-weight:400;}
 
-    #status{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:3;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:7px 18px;color:#fff;font-size:.84rem;white-space:nowrap;max-width:90vw;text-align:center;}
+    #status{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:3;background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:7px 18px;color:#fff;font-size:.84rem;white-space:nowrap;max-width:90vw;text-align:center;}
 
-    #bill-lbl{position:absolute;z-index:3;background:rgba(0,0,0,.82);border:1px solid rgba(245,208,96,.48);border-radius:8px;padding:5px 14px;color:#f5d060;font-size:clamp(.9rem,3.5vw,1.1rem);font-weight:700;white-space:nowrap;transform:translateX(-50%);pointer-events:none;display:none;}
+    #bill-lbl{position:absolute;z-index:3;background:rgba(0,0,0,.88);border:1px solid rgba(212,170,85,.45);border-radius:8px;padding:5px 14px;color:#d4aa55;font-size:clamp(.9rem,3.5vw,1.1rem);font-weight:700;white-space:nowrap;transform:translateX(-50%);pointer-events:none;display:none;}
 
-    #pinch-dot{position:absolute;z-index:4;width:32px;height:32px;border-radius:50%;border:2.5px solid #f5d060;background:rgba(245,208,96,.22);transform:translate(-50%,-50%);display:none;pointer-events:none;box-shadow:0 0 14px rgba(245,208,96,.5);}
+    #pinch-dot{position:absolute;z-index:4;width:30px;height:30px;border-radius:50%;border:2.5px solid #d4aa55;background:rgba(212,170,85,.2);transform:translate(-50%,-50%);display:none;pointer-events:none;box-shadow:0 0 12px rgba(212,170,85,.45);}
 
-    #btn-back{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.22);border-radius:22px;color:rgba(255,255,255,.85);font-size:.9rem;padding:9px 26px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    #btn-back{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:5;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2);border-radius:22px;color:rgba(255,255,255,.8);font-size:.9rem;padding:9px 26px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
     #btn-back:active{opacity:.65;}
 
-    #loading-ovl{position:absolute;inset:0;z-index:10;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;font-size:.9rem;}
-    .spinner{width:44px;height:44px;border:4px solid rgba(245,208,96,.22);border-top-color:#f5d060;border-radius:50%;animation:spin .9s linear infinite;}
+    #loading-ovl{position:absolute;inset:0;z-index:10;background:rgba(0,0,0,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#fff;font-size:.9rem;}
+    .spinner{width:44px;height:44px;border:4px solid rgba(212,170,85,.2);border-top-color:#d4aa55;border-radius:50%;animation:spin .9s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
     #loading-ovl.hidden{display:none;}
   </style>
@@ -64,7 +63,7 @@
 <div id="s-numpad">
   <div class="np-bg"></div>
   <div class="np-inner">
-    <div class="np-title">💴 Money Lifter</div>
+    <div class="np-title">💰 Money Lifter</div>
     <div class="np-sub">財布の中のお金を持ち上げよう</div>
     <div id="np-disp"><span id="np-disp-num">0</span><span class="np-yen">円</span></div>
     <div id="np-grid">
@@ -84,7 +83,6 @@
 
 <!-- ════ SCREEN 2: 3D APP ════ -->
 <div id="s-app">
-  <!-- Three.js canvas injected here by JS -->
   <div id="lift-bar"><div id="lift-track"><div id="lift-fill" style="height:0%"></div></div><div id="lift-lbl">LIFT</div></div>
   <div id="scale-box"><span id="scale-num">1.00</span><small>× 倍率</small></div>
   <div id="status">読み込み中...</div>
@@ -133,278 +131,312 @@ document.getElementById('np-start').addEventListener('click', () => {
 });
 document.getElementById('btn-back').addEventListener('click', stopApp);
 
-/* ── Lift formula: inversely proportional to amount
-   5000円→maxLift=3.0, 10000円→1.5, 20000円→0.75  ── */
+/* ── Lift formula (inversely proportional to amount) ── */
 function calcMaxLift(amount) {
   return Math.min(15000 / Math.max(amount,50), 4.5);
 }
 function fmtJPY(n) { return '¥'+n.toLocaleString('ja-JP'); }
 
 /* ── App state ── */
-let currentAmt  = 0;
-let maxLift     = 1.5;
-let liftFrac    = 0;
-let animLift    = 0;
-let isGrabbing  = false;
-let wasPinching = false;
-let grabHandSz  = 0;
-
+let currentAmt=0, maxLift=1.5, liftFrac=0, animLift=0;
+let isGrabbing=false, wasPinching=false, grabHandSz=0;
 let rawTiltX=0, rawTiltY=0, smoothTX=0, smoothTY=0;
 let tiltBaseX=0, tiltBaseY=0;
-const CD_BASE   = 1.2;
-const TILT_SENS = 0.6;
-let gyroActive  = false;
-
+const CD_BASE=1.2, TILT_SENS=0.55;
+let gyroActive=false;
 let mpHands=null, mpCamera=null, hidVid=null, rafHandle=null;
 
 /* ── Three.js state ── */
-let scene3, cam3, renderer3;
-let billMesh=null, billShadow=null;
-let billReady = false;
-const BILL_REST_Y = 0.12;
-const CAM_BASE    = new THREE.Vector3(0, 6.2, 4.6);
+let scene3, cam3, renderer3, billMesh=null, billShadow=null, billReady=false;
+const BILL_REST_Y = 0.1;
+/* Camera base — steep top-down to show full wallet length with narrowing perspective */
+const CAM_POS  = new THREE.Vector3(0, 11, 4.2);
+const CAM_LOOK = new THREE.Vector3(0, 0, 1.5);
+
+/* Wallet dimensions: narrow (X) × long (Z) coin-purse shape */
+const W = 3.0;   // width
+const D = 8.2;   // depth (long axis — camera looks along this)
+const WH = 1.0;  // wall height
 
 /* ── Start / Stop ── */
 function startApp(amount) {
-  currentAmt  = amount;
-  maxLift     = calcMaxLift(amount);
-  liftFrac    = 0;
-  animLift    = BILL_REST_Y;
-  isGrabbing  = false;
-  wasPinching = false;
+  currentAmt=amount; maxLift=calcMaxLift(amount);
+  liftFrac=0; animLift=BILL_REST_Y;
+  isGrabbing=false; wasPinching=false;
   rawTiltX=rawTiltY=smoothTX=smoothTY=0;
-
-  billLblEl.textContent = fmtJPY(amount);
-  billLblEl.style.display = 'none';
-  loadingOvl.classList.remove('hidden');
-  statusEl.textContent = '財布を準備中...';
-
-  sNumpad.style.display = 'none';
-  sApp.style.display    = 'block';
-
-  initScene();
-  initGyro();
-  initMP();
-  rafHandle = requestAnimationFrame(renderLoop);
+  billLblEl.textContent=fmtJPY(amount); billLblEl.style.display='none';
+  loadingOvl.classList.remove('hidden'); statusEl.textContent='財布を準備中...';
+  sNumpad.style.display='none'; sApp.style.display='block';
+  initScene(); initGyro(); initMP();
+  rafHandle=requestAnimationFrame(renderLoop);
 }
 
 function stopApp() {
   cancelAnimationFrame(rafHandle);
-  if (renderer3) { renderer3.dispose(); renderer3.domElement.remove(); renderer3=null; }
+  if (renderer3){renderer3.dispose();renderer3.domElement.remove();renderer3=null;}
   scene3=null; cam3=null; billMesh=null; billShadow=null; billReady=false;
-  if (mpCamera) { try{mpCamera.stop();}catch(_){} mpCamera=null; }
-  if (hidVid)   { try{hidVid.srcObject&&hidVid.srcObject.getTracks().forEach(t=>t.stop());}catch(_){} hidVid.remove(); hidVid=null; }
-  if (mpHands)  { try{mpHands.close();}catch(_){} mpHands=null; }
+  if (mpCamera){try{mpCamera.stop();}catch(_){}mpCamera=null;}
+  if (hidVid){try{hidVid.srcObject&&hidVid.srcObject.getTracks().forEach(t=>t.stop());}catch(_){}hidVid.remove();hidVid=null;}
+  if (mpHands){try{mpHands.close();}catch(_){}mpHands=null;}
   rawTiltX=rawTiltY=smoothTX=smoothTY=0;
-  sApp.style.display    = 'none';
-  sNumpad.style.display = 'flex';
+  sApp.style.display='none'; sNumpad.style.display='flex';
 }
 
-/* ════════════════════════════════
+/* ══════════════════════════════════
    THREE.JS SCENE
-════════════════════════════════ */
+══════════════════════════════════ */
 function initScene() {
   scene3 = new THREE.Scene();
-  scene3.background = new THREE.Color(0x06030a);
-  scene3.fog = new THREE.FogExp2(0x06030a, 0.07);
+  scene3.background = new THREE.Color(0x080808);
+  /* Slight fog deepens the pouch darkness */
+  scene3.fog = new THREE.FogExp2(0x060606, 0.055);
 
-  cam3 = new THREE.PerspectiveCamera(44, window.innerWidth/window.innerHeight, 0.1, 60);
-  cam3.position.copy(CAM_BASE);
-  cam3.lookAt(0, 0, 0);
+  cam3 = new THREE.PerspectiveCamera(46, window.innerWidth/window.innerHeight, 0.1, 60);
+  cam3.position.copy(CAM_POS);
+  cam3.lookAt(CAM_LOOK);
 
-  renderer3 = new THREE.WebGLRenderer({ antialias: true });
+  renderer3 = new THREE.WebGLRenderer({antialias:true});
   renderer3.setSize(window.innerWidth, window.innerHeight);
-  renderer3.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer3.setPixelRatio(Math.min(window.devicePixelRatio,2));
   renderer3.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer3.toneMappingExposure = 1.15;
-  renderer3.domElement.style.cssText = 'position:absolute;inset:0;z-index:0;';
+  renderer3.toneMappingExposure = 1.1;
+  renderer3.domElement.style.cssText='position:absolute;inset:0;z-index:0;';
   sApp.insertBefore(renderer3.domElement, sApp.firstChild);
 
   /* ── Lighting ── */
-  scene3.add(new THREE.AmbientLight(0xffd8a0, 0.5));
+  /* Dim ambient to keep leather dark */
+  scene3.add(new THREE.AmbientLight(0xffd0a0, 0.32));
 
-  const sun = new THREE.DirectionalLight(0xfff0d0, 1.5);
-  sun.position.set(3, 9, 5);
-  scene3.add(sun);
+  /* Main overhead light — angled to catch zipper / coin edges */
+  const sun = new THREE.DirectionalLight(0xfff5e0, 1.8);
+  sun.position.set(1.5, 10, 3); scene3.add(sun);
 
-  const fill = new THREE.PointLight(0xff9050, 0.8, 14);
-  fill.position.set(-2, 5, 2);
-  scene3.add(fill);
+  /* Fill from front-left to illuminate near end of wallet */
+  const fill = new THREE.PointLight(0xffb060, 1.0, 16);
+  fill.position.set(-1, 5, 5); scene3.add(fill);
 
-  const rim = new THREE.PointLight(0xffc060, 0.5, 10);
-  rim.position.set(0, 3, -3);
-  scene3.add(rim);
+  /* Warm glow inside — makes interior gold-tinted */
+  const glow = new THREE.PointLight(0xffc040, 0.6, 9);
+  glow.position.set(0, 2, 0); scene3.add(glow);
 
-  /* ── Interior glow ── */
-  const glow = new THREE.PointLight(0xffd080, 0.4, 8);
-  glow.position.set(0, 1.5, 0);
-  scene3.add(glow);
+  /* Rim from behind to outline wallet edge against dark background */
+  const rim = new THREE.PointLight(0xffd080, 0.4, 12);
+  rim.position.set(0, 3, -5); scene3.add(rim);
 
   buildWallet();
   createBill();
   createCoins();
-
   window.addEventListener('resize', onResize3);
 }
 
 function onResize3() {
   if (!cam3||!renderer3) return;
-  cam3.aspect = window.innerWidth/window.innerHeight;
+  cam3.aspect=window.innerWidth/window.innerHeight;
   cam3.updateProjectionMatrix();
-  renderer3.setSize(window.innerWidth, window.innerHeight);
+  renderer3.setSize(window.innerWidth,window.innerHeight);
 }
 
-/* ── Procedural leather texture ── */
+/* ── Procedural dark leather texture ── */
 function makeLeatherTex(seed) {
   const c=document.createElement('canvas'); c.width=c.height=512;
   const ctx=c.getContext('2d');
-  ctx.fillStyle='#240c01'; ctx.fillRect(0,0,512,512);
-  const rng=(s)=>{ s=Math.sin(s*127.1+seed)*43758.5453; return s-Math.floor(s); };
-  for (let i=0;i<16000;i++) {
-    const x=rng(i)*512, y=rng(i+1000)*512;
-    const a=rng(i+2000)*.14;
-    ctx.fillStyle=rng(i+3000)>.55?`rgba(210,130,65,${a})`:`rgba(0,0,0,${a*2})`;
-    ctx.fillRect(x,y,rng(i+4000)*2.5+.5,rng(i+5000)*1.5+.3);
+  /* Very dark charcoal base */
+  ctx.fillStyle='#0e0e0e'; ctx.fillRect(0,0,512,512);
+  const rng=i=>{let s=Math.sin(i*91.3+seed)*43758.5;return s-Math.floor(s);};
+  /* Fine grain */
+  for (let i=0;i<18000;i++){
+    const x=rng(i)*512, y=rng(i+700)*512, a=rng(i+1400)*.1;
+    ctx.fillStyle=rng(i+2100)>.6?`rgba(100,90,80,${a})`:`rgba(0,0,0,${a*2.5})`;
+    ctx.fillRect(x,y,rng(i+2800)*2+.4,rng(i+3500)*1.2+.2);
   }
-  for (let i=0;i<55;i++) {
-    const y=rng(i+6000)*512;
+  /* Horizontal leather grain lines */
+  for (let i=0;i<60;i++){
+    const y=rng(i+4200)*512;
     ctx.beginPath(); ctx.moveTo(0,y);
-    for (let x=0;x<512;x+=rng(i*7+x)*.01*20+8) ctx.lineTo(x,y+rng(i*13+x*.01)*3-1.5);
-    ctx.strokeStyle=`rgba(0,0,0,${rng(i+7000)*.07})`; ctx.lineWidth=rng(i+8000)+.3; ctx.stroke();
+    for(let x=8;x<512;x+=rng(i*7.3+x*.01)*16+6) ctx.lineTo(x,y+rng(i*13+x*.01)*2.5-1.25);
+    ctx.strokeStyle=`rgba(0,0,0,${rng(i+5000)*.06})`; ctx.lineWidth=rng(i+5700)+.3; ctx.stroke();
   }
   const t=new THREE.CanvasTexture(c);
-  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,2);
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(2,3);
   return t;
 }
 
-/* ── Procedural felt/lining texture ── */
-function makeFeltTex() {
+/* ── Procedural dark interior fabric ── */
+function makeInteriorTex() {
   const c=document.createElement('canvas'); c.width=c.height=256;
   const ctx=c.getContext('2d');
-  ctx.fillStyle='#5e4010'; ctx.fillRect(0,0,256,256);
-  for (let i=0;i<28000;i++) {
-    const r=Math.floor(Math.random()*60+160);
-    const g=Math.floor(Math.random()*40+110);
-    ctx.fillStyle=`rgba(${r},${g},0,${Math.random()*.055})`;
+  ctx.fillStyle='#131313'; ctx.fillRect(0,0,256,256);
+  for(let i=0;i<30000;i++){
+    const v=Math.floor(Math.random()*25+5);
+    ctx.fillStyle=`rgba(${v},${v},${v},${Math.random()*.07})`;
     ctx.fillRect(Math.random()*256,Math.random()*256,1,1);
   }
-  // stitching border drawn into felt texture
-  ctx.setLineDash([5,5]); ctx.strokeStyle='rgba(215,175,80,.55)'; ctx.lineWidth=1.8;
-  ctx.strokeRect(12,12,232,232); ctx.setLineDash([]);
   const t=new THREE.CanvasTexture(c);
-  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(3,2);
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(4,6);
   return t;
 }
 
-/* ── Build wallet interior ── */
+/* ── Build wallet: narrow coin-pouch style ── */
 function buildWallet() {
-  const lTex = makeLeatherTex(42);
-  const fTex = makeFeltTex();
+  const lTex = makeLeatherTex(17);
+  const iTex = makeInteriorTex();
 
-  const lMat = new THREE.MeshStandardMaterial({ map:lTex, color:0x3c1a07, roughness:.88, metalness:.03 });
-  const fMat = new THREE.MeshStandardMaterial({ map:fTex, color:0xb08830, roughness:.96, metalness:.0 });
-  const eMat = new THREE.MeshStandardMaterial({ color:0x50200a, roughness:.84, metalness:.06 });
-  const iMat = new THREE.MeshStandardMaterial({ color:0x9a7028, roughness:.95, metalness:.0 });
+  /* Dark charcoal leather */
+  const lMat = new THREE.MeshStandardMaterial({map:lTex, color:0x1a1a1a, roughness:.88, metalness:.04});
+  /* Very dark interior fabric */
+  const iMat = new THREE.MeshStandardMaterial({map:iTex, color:0x141414, roughness:.95, metalness:.0});
+  /* Gold zipper material */
+  const zMat = new THREE.MeshStandardMaterial({color:0xc8962a, metalness:.9, roughness:.18});
+  const zRailMat = new THREE.MeshStandardMaterial({color:0xb88020, metalness:.85, roughness:.22});
+  /* Edge trim (slightly lighter leather) */
+  const eMat = new THREE.MeshStandardMaterial({color:0x252520, roughness:.82, metalness:.06});
 
-  const W=7.8, D=5.2, wallH=1.2;
+  /* ── Exterior base ── */
+  const base = new THREE.Mesh(new THREE.BoxGeometry(W+0.5, 0.25, D+0.4), lMat);
+  base.position.y=-0.125; scene3.add(base);
 
-  // Exterior base
-  const base = new THREE.Mesh(new THREE.BoxGeometry(W,0.32,D), lMat);
-  base.position.y = -0.16; scene3.add(base);
+  /* ── Interior floor fabric ── */
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W-0.15, D-0.1), iMat);
+  floor.rotation.x=-Math.PI/2; floor.position.y=0.004; scene3.add(floor);
 
-  // Interior felt floor
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W-0.6, D-0.5), fMat);
-  floor.rotation.x = -Math.PI/2; floor.position.y = 0.006; scene3.add(floor);
+  /* ── Walls ── */
+  // Back (far end)
+  const bw = new THREE.Mesh(new THREE.BoxGeometry(W+0.5, WH, 0.22), lMat);
+  bw.position.set(0, WH/2, -D/2-0.01); scene3.add(bw);
+  // Left
+  const lw = new THREE.Mesh(new THREE.BoxGeometry(0.22, WH, D+0.4), lMat);
+  lw.position.set(-W/2-0.11, WH/2, 0); scene3.add(lw);
+  // Right
+  const rw = new THREE.Mesh(new THREE.BoxGeometry(0.22, WH, D+0.4), lMat);
+  rw.position.set( W/2+0.11, WH/2, 0); scene3.add(rw);
+  // Front (near, camera side — very short so we can see inside from above)
+  const fw = new THREE.Mesh(new THREE.BoxGeometry(W+0.5, WH*0.3, 0.22), lMat);
+  fw.position.set(0, WH*0.15, D/2+0.01); scene3.add(fw);
 
-  // Walls (back, left, right, front-shorter)
-  const walls = [
-    { g: new THREE.BoxGeometry(W, wallH, 0.28),      p:[0, wallH/2, -D/2+.14],  iy:true, iw:W-0.6,  iz:false },
-    { g: new THREE.BoxGeometry(0.28, wallH, D),       p:[-W/2+.14, wallH/2, 0],  iy:false, iw:D,     iz:true  },
-    { g: new THREE.BoxGeometry(0.28, wallH, D),       p:[ W/2-.14, wallH/2, 0],  iy:false, iw:D,     iz:true  },
-    { g: new THREE.BoxGeometry(W, wallH*.45, 0.28),  p:[0, wallH*.225, D/2-.14], iy:true, iw:W-0.6,  iz:false },
-  ];
+  /* ── Inner wall liner (dark fabric inside walls) ── */
+  const addInnerPlane = (w,h,px,py,pz,ry) => {
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),iMat);
+    m.position.set(px,py,pz); m.rotation.y=ry; scene3.add(m);
+  };
+  addInnerPlane(W-0.05, WH, 0, WH/2, -D/2+0.12, 0);           // back inner
+  addInnerPlane(D-0.05, WH, -W/2+0.12, WH/2, 0, Math.PI/2);   // left inner
+  addInnerPlane(D-0.05, WH,  W/2-0.12, WH/2, 0, -Math.PI/2);  // right inner
 
-  walls.forEach(w => {
-    const m = new THREE.Mesh(w.g, lMat); m.position.set(...w.p); scene3.add(m);
-    // top edge trim
-    const tw = w.g.parameters.width, td = w.g.parameters.depth;
-    const trim = new THREE.Mesh(new THREE.BoxGeometry(tw+.02, .06, td+.02), eMat);
-    trim.position.set(w.p[0], w.p[1]+w.g.parameters.height/2+.03, w.p[2]); scene3.add(trim);
-  });
+  /* ── Top edge trim along all walls ── */
+  const addTrim = (tw,td,px,pz) => {
+    const m=new THREE.Mesh(new THREE.BoxGeometry(tw,.07,td),eMat);
+    m.position.set(px,WH+.035,pz); scene3.add(m);
+  };
+  addTrim(W+0.5,.28,  0, -D/2-0.01);   // back
+  addTrim(.28, D+0.4, -W/2-0.11, 0);   // left
+  addTrim(.28, D+0.4,  W/2+0.11, 0);   // right
+  addTrim(W+0.5,.20,  0,  D/2+0.01);   // front
 
-  // Inner wall liner (felt color on inner faces)
-  const liners = [
-    { size:[W-0.5, wallH],    pos:[0, wallH/2, -D/2+.3],   ry:0           },
-    { size:[D-0.0, wallH],    pos:[-W/2+.3, wallH/2, 0],   ry:Math.PI/2   },
-    { size:[D-0.0, wallH],    pos:[ W/2-.3, wallH/2, 0],   ry:-Math.PI/2  },
-  ];
-  liners.forEach(l => {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(...l.size), iMat);
-    m.position.set(...l.pos); m.rotation.y = l.ry; scene3.add(m);
-  });
+  /* ══ ZIPPER ══ */
+  /* Zipper rails along both long edges (top of left/right walls) */
+  const addRail = (sx) => {
+    const rail=new THREE.Mesh(new THREE.BoxGeometry(.12,.07,D+0.2), zRailMat);
+    rail.position.set(sx*(W/2+0.11), WH+.07, 0); scene3.add(rail);
+  };
+  addRail(-1); addRail(1);
 
-  // Card slot dividers (decorative vertical strips on back wall)
-  for (let i=-1;i<=1;i+=2) {
-    const div = new THREE.Mesh(new THREE.BoxGeometry(.04, wallH*.9, .08), eMat);
-    div.position.set(i*1.5, wallH*.45, -D/2+.28); scene3.add(div);
+  /* Zipper teeth — InstancedMesh for performance */
+  const nTeeth = 55;
+  const toothGeom = new THREE.BoxGeometry(.11,.065,.10);
+  const teeth = new THREE.InstancedMesh(toothGeom, zMat, nTeeth*2);
+  teeth.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+  const dummy = new THREE.Object3D();
+  const step  = (D-0.3) / nTeeth;
+  let idx = 0;
+  for (let i=0;i<nTeeth;i++) {
+    const z = -D/2+0.15 + i*step + step/2;
+    for (const sx of [-1,1]) {
+      dummy.position.set(sx*(W/2+0.11), WH+.11, z);
+      dummy.rotation.y = 0;
+      dummy.updateMatrix();
+      teeth.setMatrixAt(idx++, dummy.matrix);
+    }
   }
+  teeth.instanceMatrix.needsUpdate=true;
+  scene3.add(teeth);
+
+  /* Zipper pull tab at front opening */
+  const pull = new THREE.Mesh(new THREE.BoxGeometry(.22,.22,.5), zMat);
+  pull.position.set(0, WH+.17, D/2+.25); scene3.add(pull);
+  const pullRing = new THREE.Mesh(new THREE.TorusGeometry(.14,.04,8,16), zMat);
+  pullRing.rotation.x=Math.PI/2; pullRing.position.set(0,WH+.17,D/2+.55); scene3.add(pullRing);
+
+  /* ── Small stitching divider (card-slot suggestion on back interior wall) ── */
+  const stitchMat=new THREE.LineBasicMaterial({color:0x555550});
+  const sPts=[new THREE.Vector3(-W/2+.18,.02,-D/2+.18),new THREE.Vector3(W/2-.18,.02,-D/2+.18)];
+  scene3.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(sPts),stitchMat));
 }
 
 /* ── Bill ── */
 function createBill() {
-  const loader = new THREE.TextureLoader();
+  const loader=new THREE.TextureLoader();
   const onLoad = tex => {
-    if (tex) tex.colorSpace = THREE.SRGBColorSpace;
-    const aspect = tex ? tex.image.width/tex.image.height : 1.6;
-    const bw = 3.4, bh = bw/aspect;
+    if (tex) tex.colorSpace=THREE.SRGBColorSpace;
+    const aspect = tex ? tex.image.width/tex.image.height : 1.62;
+    /* Fit within wallet width with margin */
+    const bw = Math.min(W-0.3, 2.7);
+    const bh = bw/aspect;
 
-    const geom = new THREE.PlaneGeometry(bw, bh);
-    const mat  = new THREE.MeshStandardMaterial({
-      map: tex || null,
-      color: tex ? 0xffffff : 0xd4c98a,
-      roughness:.62, metalness:.0, side:THREE.DoubleSide
+    const geom=new THREE.PlaneGeometry(bw,bh);
+    const mat =new THREE.MeshStandardMaterial({
+      map:tex||null, color:tex?0xffffff:0xd4c98a,
+      roughness:.65, metalness:.0, side:THREE.DoubleSide
     });
-
-    billMesh = new THREE.Mesh(geom, mat);
-    billMesh.rotation.x = -Math.PI/2;
-    billMesh.position.set(0.2, BILL_REST_Y, 0.3);
+    billMesh=new THREE.Mesh(geom,mat);
+    billMesh.rotation.x=-Math.PI/2;
+    /* Place bill toward near end of wallet so it's clearly visible */
+    billMesh.position.set(0, BILL_REST_Y, 1.0);
     scene3.add(billMesh);
 
-    // Shadow blob
-    const sGeom = new THREE.PlaneGeometry(bw+.6, bh+.5);
-    const sMat  = new THREE.MeshBasicMaterial({ color:0x000000, transparent:true, opacity:.38, depthWrite:false });
-    billShadow  = new THREE.Mesh(sGeom, sMat);
-    billShadow.rotation.x = -Math.PI/2;
-    billShadow.position.set(0.2, 0.008, 0.3);
+    /* Shadow blob beneath bill */
+    const sGeom=new THREE.PlaneGeometry(bw+.5,bh+.4);
+    const sMat =new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.42,depthWrite:false});
+    billShadow=new THREE.Mesh(sGeom,sMat);
+    billShadow.rotation.x=-Math.PI/2;
+    billShadow.position.set(0,.005,1.0);
     scene3.add(billShadow);
 
-    billReady = true;
-    billLblEl.style.display = 'block';
+    billReady=true;
+    billLblEl.style.display='block';
     loadingOvl.classList.add('hidden');
-    statusEl.textContent = '手を映してピンチでつかもう';
+    statusEl.textContent='手を映してピンチでつかもう';
   };
-  loader.load('money005.png', onLoad, undefined, () => onLoad(null));
+  loader.load('money005.png', onLoad, undefined, ()=>onLoad(null));
 }
 
-/* ── Coins ── */
+/* ── Coins — scattered across full wallet length ── */
 function createCoins() {
+  /* Spread along Z: from near end to far, clustered near center-back */
   const coinDefs = [
-    { c:0xd4af37, m:.78, r:.23, h:.045, x:-1.9, z:-1.2 },
-    { c:0xd4af37, m:.76, r:.19, h:.04,  x:-2.4, z:-1.6 },
-    { c:0xc0c0c0, m:.66, r:.20, h:.04,  x: 2.2, z: 1.1 },
-    { c:0xb87333, m:.50, r:.18, h:.032, x: 2.5, z:-0.9 },
-    { c:0xc0c0c0, m:.66, r:.16, h:.03,  x: 1.8, z: 1.5 },
-    { c:0xd4af37, m:.80, r:.25, h:.05,  x:-2.5, z: 0.9 },
-    { c:0xb87333, m:.48, r:.16, h:.03,  x: 1.6, z:-1.4 },
-    { c:0xd4af37, m:.75, r:.18, h:.04,  x:-1.3, z: 1.6 },
-    { c:0xc0c0c0, m:.62, r:.21, h:.038, x: 0.9, z:-1.6 },
+    /* Gold 500円 large */
+    {c:0xd4af37,m:.82,r:.24,h:.05, x:-.5, z:-2.5, ry:.3},
+    {c:0xd4af37,m:.80,r:.22,h:.05, x: .6, z:-3.0, ry:1.1},
+    /* Gold 100円 medium */
+    {c:0xd4af37,m:.76,r:.19,h:.04, x:-.8, z:-1.5, ry:.7},
+    {c:0xd4af37,m:.75,r:.18,h:.04, x: .7, z:-2.0, ry:2.0},
+    /* Silver 50円/100円 */
+    {c:0xc2c2c2,m:.68,r:.21,h:.04, x: .3, z:-1.0, ry:.5},
+    {c:0xc2c2c2,m:.65,r:.19,h:.038,x:-.4, z:-3.5, ry:1.8},
+    /* Copper 10円/5円 */
+    {c:0xb87333,m:.50,r:.18,h:.032,x:-.7, z:-2.8, ry:.9},
+    {c:0xb87333,m:.48,r:.16,h:.03, x: .5, z:-1.8, ry:2.3},
+    /* Small silver 1円 */
+    {c:0xd0d0d0,m:.60,r:.15,h:.025,x: .1, z:-0.5, ry:1.4},
+    /* Extra coins deep in wallet */
+    {c:0xd4af37,m:.78,r:.20,h:.04, x:-.3, z:-3.8, ry:.2},
+    {c:0xc2c2c2,m:.66,r:.17,h:.035,x: .4, z:-3.2, ry:1.6},
   ];
-  coinDefs.forEach(cd => {
-    const geom = new THREE.CylinderGeometry(cd.r, cd.r, cd.h, 40);
-    const mat  = new THREE.MeshStandardMaterial({ color:cd.c, metalness:cd.m, roughness:1-cd.m*.55 });
-    const coin = new THREE.Mesh(geom, mat);
-    coin.position.set(cd.x, cd.h/2+.005, cd.z);
-    coin.rotation.y = Math.random()*Math.PI;
+  coinDefs.forEach(cd=>{
+    const geom=new THREE.CylinderGeometry(cd.r,cd.r,cd.h,36);
+    const mat =new THREE.MeshStandardMaterial({color:cd.c,metalness:cd.m,roughness:1-cd.m*.55});
+    const coin=new THREE.Mesh(geom,mat);
+    coin.position.set(cd.x, cd.h/2+.004, cd.z);
+    coin.rotation.y=cd.ry;
     scene3.add(coin);
   });
 }
@@ -412,30 +444,28 @@ function createCoins() {
 /* ── Gyroscope ── */
 function initGyro() {
   if (gyroActive) return;
-  const handler = e => { rawTiltX=e.gamma??0; rawTiltY=e.beta??0; };
-  if (typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function') {
+  const h=e=>{rawTiltX=e.gamma??0;rawTiltY=e.beta??0;};
+  if (typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function') {
     DeviceOrientationEvent.requestPermission().then(s=>{
-      if (s==='granted') { window.addEventListener('deviceorientation',handler,true); gyroActive=true; }
+      if(s==='granted'){window.addEventListener('deviceorientation',h,true);gyroActive=true;}
     }).catch(()=>{});
   } else {
-    window.addEventListener('deviceorientation',handler,true); gyroActive=true;
+    window.addEventListener('deviceorientation',h,true);gyroActive=true;
   }
 }
 
 /* ── MediaPipe ── */
 function initMP() {
-  hidVid = document.createElement('video');
+  hidVid=document.createElement('video');
   hidVid.setAttribute('playsinline','');
   hidVid.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;top:0;left:0;';
   document.body.appendChild(hidVid);
-
-  mpHands = new Hands({ locateFile: f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}` });
-  mpHands.setOptions({ maxNumHands:1, modelComplexity:1, minDetectionConfidence:.65, minTrackingConfidence:.55 });
+  mpHands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`});
+  mpHands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.65,minTrackingConfidence:.55});
   mpHands.onResults(onResults);
-
-  mpCamera = new Camera(hidVid, {
-    onFrame: async () => { await mpHands.send({ image:hidVid }); },
-    width:640, height:480, facingMode:'user',
+  mpCamera=new Camera(hidVid,{
+    onFrame:async()=>{await mpHands.send({image:hidVid});},
+    width:640,height:480,facingMode:'user',
   });
   mpCamera.start().catch(err=>{
     loadingOvl.classList.add('hidden');
@@ -445,111 +475,94 @@ function initMP() {
 
 /* ── Landmark helpers ── */
 function d2(a,b){const dx=a.x-b.x,dy=a.y-b.y;return Math.sqrt(dx*dx+dy*dy);}
-function handSz(lm)   { return d2(lm[0],lm[9]); }
-function pinchRat(lm) { const h=handSz(lm); return h>1e-3?d2(lm[4],lm[8])/h:1; }
-function pinchCtr(lm) { return {x:(lm[4].x+lm[8].x)/2,y:(lm[4].y+lm[8].y)/2}; }
+function handSz(lm)   {return d2(lm[0],lm[9]);}
+function pinchRat(lm) {const h=handSz(lm);return h>1e-3?d2(lm[4],lm[8])/h:1;}
+function pinchCtr(lm) {return{x:(lm[4].x+lm[8].x)/2,y:(lm[4].y+lm[8].y)/2};}
 
-/* ── Bill projected screen position ── */
 function billScreenPos() {
-  if (!billMesh||!cam3) return {x:window.innerWidth/2,y:window.innerHeight/2};
-  const p = billMesh.position.clone().project(cam3);
-  return { x:(p.x+1)/2*window.innerWidth, y:(-p.y+1)/2*window.innerHeight };
+  if (!billMesh||!cam3) return{x:window.innerWidth/2,y:window.innerHeight/2};
+  const p=billMesh.position.clone().project(cam3);
+  return{x:(p.x+1)/2*window.innerWidth,y:(-p.y+1)/2*window.innerHeight};
 }
 
 /* ── Hand results ── */
 function onResults(res) {
-  const lmArr = res.multiHandLandmarks;
-  if (!lmArr||lmArr.length===0) {
-    if (isGrabbing) { isGrabbing=false; statusEl.textContent='手が見えません… もう一度かざしてください'; }
-    wasPinching=false; liftFrac=0; pinchDot.style.display='none'; return;
+  const lmArr=res.multiHandLandmarks;
+  if (!lmArr||lmArr.length===0){
+    if(isGrabbing){isGrabbing=false;statusEl.textContent='手が見えません… もう一度かざしてください';}
+    wasPinching=false;liftFrac=0;pinchDot.style.display='none';return;
   }
-
-  const lm=lmArr[0], pr=pinchRat(lm), hs=handSz(lm), pc=pinchCtr(lm);
-  const pinchThresh = isGrabbing ? 0.36 : 0.24;
-  const pinching    = pr < pinchThresh;
-
-  const sx=(1-pc.x)*window.innerWidth, sy=pc.y*window.innerHeight;
+  const lm=lmArr[0],pr=pinchRat(lm),hs=handSz(lm),pc=pinchCtr(lm);
+  const pinchThresh=isGrabbing?.36:.24;
+  const pinching=pr<pinchThresh;
+  const sx=(1-pc.x)*window.innerWidth,sy=pc.y*window.innerHeight;
   pinchDot.style.display=pinching?'block':'none';
-  if (pinching){pinchDot.style.left=sx+'px';pinchDot.style.top=sy+'px';}
+  if(pinching){pinchDot.style.left=sx+'px';pinchDot.style.top=sy+'px';}
 
-  // Pinch START
-  if (pinching&&!wasPinching&&!isGrabbing&&billReady) {
+  if(pinching&&!wasPinching&&!isGrabbing&&billReady){
     const bp=billScreenPos();
-    if (Math.hypot(sx-bp.x, sy-bp.y)<140) {
-      isGrabbing=true; grabHandSz=hs;
-      tiltBaseX=smoothTX; tiltBaseY=smoothTY;
+    if(Math.hypot(sx-bp.x,sy-bp.y)<150){
+      isGrabbing=true;grabHandSz=hs;
+      tiltBaseX=smoothTX;tiltBaseY=smoothTY;
       statusEl.textContent='✊ つかんだ！スマホから手を遠ざけよう！';
     }
   }
-  // Pinch END
-  if (!pinching&&wasPinching&&isGrabbing) {
-    isGrabbing=false; statusEl.textContent='手を映してピンチでつかもう';
+  if(!pinching&&wasPinching&&isGrabbing){
+    isGrabbing=false;statusEl.textContent='手を映してピンチでつかもう';
   }
   wasPinching=pinching;
-
-  if (isGrabbing&&pinching) {
+  if(isGrabbing&&pinching){
     const szRatio=hs/Math.max(grabHandSz,1e-4);
     liftFrac=Math.min(Math.max(0,(1-szRatio)/.25),1.0);
-  } else if (!isGrabbing) {
-    liftFrac=0;
-  }
+  } else if(!isGrabbing){liftFrac=0;}
 }
 
 /* ── Render loop ── */
-const _tmpVec = new THREE.Vector3();
 function renderLoop() {
-  if (sApp.style.display!=='block') return;
+  if(sApp.style.display!=='block') return;
 
-  /* Smooth gyro */
+  /* Gyro smooth */
   smoothTX+=(rawTiltX-smoothTX)*.15;
   smoothTY+=(rawTiltY-smoothTY)*.15;
 
-  /* Bill lift (lerp) */
-  const idle = !isGrabbing ? Math.sin(Date.now()*.0018)*.05 : 0;
-  const targetY = BILL_REST_Y + liftFrac*maxLift + idle;
-  animLift += (targetY-animLift)*.12;
+  /* Bill Y position */
+  const idle=!isGrabbing?Math.sin(Date.now()*.0018)*.04:0;
+  const targetY=BILL_REST_Y+liftFrac*maxLift+idle;
+  animLift+=(targetY-animLift)*.12;
 
-  if (billMesh) {
-    billMesh.position.y = animLift;
-    // subtle rock when lifted
-    billMesh.rotation.z = isGrabbing ? liftFrac*Math.sin(Date.now()*.002)*.06 : 0;
+  if(billMesh){
+    billMesh.position.y=animLift;
+    billMesh.rotation.z=isGrabbing?liftFrac*Math.sin(Date.now()*.002)*.06:0;
 
-    // shadow: shrinks and fades as bill rises
-    if (billShadow) {
-      const sf=1-liftFrac*.4;
+    if(billShadow){
+      const sf=1-liftFrac*.45;
       billShadow.scale.set(sf,sf,1);
-      billShadow.material.opacity=.38*(1-liftFrac*.78);
+      billShadow.material.opacity=.42*(1-liftFrac*.82);
     }
-
-    // Bill label follow 3D position
-    if (billLblEl.style.display!=='none') {
+    /* Bill label tracks 3D position */
+    if(billLblEl.style.display!=='none'){
       const bp=billScreenPos();
       billLblEl.style.left=bp.x+'px';
       billLblEl.style.top=(bp.y+55)+'px';
     }
-
-    // Scale readout from perspective projection
-    const distRest = CAM_BASE.y - BILL_REST_Y;
-    const distNow  = Math.max(CAM_BASE.y - billMesh.position.y, 0.5);
-    const projSc   = distRest/distNow;
-    const pct      = liftFrac*100;
-    liftFill.style.height=pct.toFixed(1)+'%';
-    scaleNum.textContent=projSc.toFixed(2);
+    /* Scale readout */
+    const distRest=CAM_POS.y-BILL_REST_Y;
+    const distNow =Math.max(CAM_POS.y-billMesh.position.y,.5);
+    scaleNum.textContent=(distRest/distNow).toFixed(2);
   }
+  liftFill.style.height=(liftFrac*100).toFixed(1)+'%';
 
-  /* Gyro camera parallax — C/D ratio decreases as lift increases → depth intensifies */
-  if (cam3) {
+  /* Gyro camera parallax — C/D shrinks as lift grows → stronger depth */
+  if(cam3){
     const dTX=smoothTX-tiltBaseX, dTY=smoothTY-tiltBaseY;
     const cd=CD_BASE/Math.max(liftFrac,.01);
-    const maxShift=1.8;
-    const cx=Math.max(-maxShift,Math.min(maxShift,(dTX/cd)*TILT_SENS*liftFrac));
-    const cz=Math.max(-maxShift,Math.min(maxShift,(dTY/cd)*TILT_SENS*.5*liftFrac));
-    cam3.position.x = CAM_BASE.x+cx;
-    cam3.position.z = CAM_BASE.z+cz;
-    cam3.lookAt(0,0,0);
+    const clamp=(v,mx)=>Math.max(-mx,Math.min(mx,v));
+    cam3.position.x=CAM_POS.x+clamp((dTX/cd)*TILT_SENS*liftFrac,2.0);
+    cam3.position.z=CAM_POS.z+clamp((dTY/cd)*TILT_SENS*.45*liftFrac,1.5);
+    cam3.lookAt(CAM_LOOK);
   }
 
-  if (renderer3&&scene3&&cam3) renderer3.render(scene3,cam3);
+  if(renderer3&&scene3&&cam3) renderer3.render(scene3,cam3);
   rafHandle=requestAnimationFrame(renderLoop);
 }
 </script>
