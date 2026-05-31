@@ -339,7 +339,7 @@ function initPhysics() {
 
 /* ── Gravity from gyro ── */
 function updateGravity(beta,gamma) {
-  const G=9.82*1.6; // amplify for snappy response
+  const G=9.82*1.4;
   const bR=(beta-90)*Math.PI/180;
   const gR=gamma*Math.PI/180;
   physWorld.gravity.set(
@@ -373,19 +373,21 @@ function createObjects() {
     /* Cannon body */
     const body=new CANNON.Body({mass:def.mass,material:oM});
     if(def.type==='coin'){
-      body.addShape(new CANNON.Cylinder(def.r,def.r,def.h,14));
+      // Thin CANNON.Cylinder is unstable → use flat Box (coin lies flat on XZ plane)
+      // Box half-extents: (r*0.72, h/2, r*0.72) stays inside the visual circle
+      body.addShape(new CANNON.Box(new CANNON.Vec3(def.r*.72, def.h/2, def.r*.72)));
     } else {
       body.addShape(new CANNON.Box(new CANNON.Vec3(def.bw/2,def.h/2,def.bd/2)));
       const q=new CANNON.Quaternion();
       q.setFromAxisAngle(new CANNON.Vec3(0,1,0),mesh.rotation.y);
       body.quaternion.copy(q);
     }
-    body.position.set(sx, def.h/2+.05+i*.08, sz);
+    body.position.set(sx, def.h/2+.06+i*.09, sz);
     body.linearDamping=def.ldam;
-    body.angularDamping=def.adam;
-    body.allowSleep=true;
-    body.sleepSpeedLimit=.12;
-    body.sleepTimeLimit=1.0;
+    // High angular damping: prevent coins from standing on edge
+    body.angularDamping=def.type==='coin'?0.85:def.adam;
+    // Keep awake to always respond to gravity changes
+    body.allowSleep=false;
     physWorld.addBody(body);
 
     physObjs.push({def, body, mesh, origMass:def.mass});
@@ -572,12 +574,7 @@ function renderLoop(ts) {
     liftFill.style.height='0%';
   }
 
-  /* Gyro camera parallax — subtle shift */
-  if(cam3){
-    const shift=smGamma*.012;
-    cam3.position.x=CAM_BASE.x+Math.max(-1.2,Math.min(1.2,shift*20));
-    cam3.lookAt(CAM_LOOK);
-  }
+  /* Camera fixed — gyro affects only physics gravity, not background */
 
   if(renderer3&&scene3&&cam3) renderer3.render(scene3,cam3);
   rafHandle=requestAnimationFrame(renderLoop);
