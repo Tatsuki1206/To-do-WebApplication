@@ -88,19 +88,19 @@
    cdRatio: 持ち上げCD比（小さいほど重い）
 ═══════════════════════════════════════ */
 const OBJ_DEFS = [
-  { type:'coin', value:100,   label:'100円',   r:.195, h:.040, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
-  { type:'coin', value:100,   label:'100円',   r:.195, h:.040, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
-  { type:'coin', value:100,   label:'100円',   r:.195, h:.040, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
-  { type:'coin', value:500,   label:'500円',   r:.240, h:.050, mass:2.0, cdRatio:.50, ldam:.40, adam:.50 },
-  { type:'coin', value:500,   label:'500円',   r:.240, h:.050, mass:2.0, cdRatio:.50, ldam:.40, adam:.50 },
-  { type:'bill', value:1000,  label:'1,000円', bw:2.8, bd:1.75, h:.012, mass:.07, cdRatio:1.10, ldam:.70, adam:.88 },
-  { type:'bill', value:10000, label:'壱万円',  bw:3.2, bd:2.00, h:.012, mass:.07, cdRatio:.06, ldam:.70, adam:.88 },
+  { type:'coin', value:100,   label:'100円',   r:.110, h:.030, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
+  { type:'coin', value:100,   label:'100円',   r:.110, h:.030, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
+  { type:'coin', value:100,   label:'100円',   r:.110, h:.030, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
+  { type:'coin', value:500,   label:'500円',   r:.135, h:.038, mass:2.0, cdRatio:.50, ldam:.40, adam:.50 },
+  { type:'coin', value:500,   label:'500円',   r:.135, h:.038, mass:2.0, cdRatio:.50, ldam:.40, adam:.50 },
+  { type:'bill', value:1000,  label:'1,000円', bw:1.30, bd:0.78, h:.010, mass:.07, cdRatio:1.10, ldam:.70, adam:.88 },
+  { type:'bill', value:10000, label:'壱万円',  bw:1.48, bd:0.89, h:.010, mass:.07, cdRatio:.06, ldam:.70, adam:.88 },
 ];
 
-const BASE_LIFT = 2.6; // world units, max possible lift
-const W=5.5, D=8.2, WH=1.35;
-const CAM_BASE = new THREE.Vector3(0, 12, 6.2);
-const CAM_LOOK = new THREE.Vector3(0, 0, 2.0);
+const BASE_LIFT = 1.8; // world units, max possible lift
+const W=3.0, D=5.4, WH=0.95;
+const CAM_BASE = new THREE.Vector3(0, 7.0, 2.6);
+const CAM_LOOK = new THREE.Vector3(0, 0, 0.3);
 
 /* ── DOM ── */
 const sStart    = document.getElementById('s-start');
@@ -169,9 +169,9 @@ function stopApp() {
 function initScene() {
   scene3=new THREE.Scene();
   scene3.background=new THREE.Color(0x050505);
-  scene3.fog=new THREE.FogExp2(0x050505,.052);
+  scene3.fog=new THREE.FogExp2(0x050505,.08);
 
-  cam3=new THREE.PerspectiveCamera(44,innerWidth/innerHeight,.1,60);
+  cam3=new THREE.PerspectiveCamera(44,innerWidth/innerHeight,.1,40);
   cam3.position.copy(CAM_BASE); cam3.lookAt(CAM_LOOK);
 
   renderer3=new THREE.WebGLRenderer({antialias:true});
@@ -184,10 +184,10 @@ function initScene() {
 
   /* Lighting */
   scene3.add(new THREE.AmbientLight(0xffd0a0,.38));
-  const sun=new THREE.DirectionalLight(0xfff5e0,1.7); sun.position.set(2,10,4); scene3.add(sun);
-  const fill=new THREE.PointLight(0xffb060,.9,18); fill.position.set(-2,5,5); scene3.add(fill);
-  const glow=new THREE.PointLight(0xffd080,.5,10); glow.position.set(0,2,0); scene3.add(glow);
-  const rim=new THREE.PointLight(0xffc060,.35,14); rim.position.set(0,3,-5); scene3.add(rim);
+  const sun=new THREE.DirectionalLight(0xfff5e0,1.7); sun.position.set(1.5,7,3); scene3.add(sun);
+  const fill=new THREE.PointLight(0xffb060,.9,12); fill.position.set(-1,4,3); scene3.add(fill);
+  const glow=new THREE.PointLight(0xffd080,.5,7);  glow.position.set(0,1.5,0); scene3.add(glow);
+  const rim=new THREE.PointLight(0xffc060,.35,10); rim.position.set(0,2.5,-3); scene3.add(rim);
 
   buildWallet();
   window.addEventListener('resize',()=>{
