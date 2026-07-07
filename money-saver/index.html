@@ -99,9 +99,16 @@ const OBJ_DEFS = [
 ];
 
 const BASE_LIFT = 1.8; // world units, max possible lift
-let W=3.0, D=5.0;      // 財布内寸 — startApp() で画面アスペクト比から再計算
+let W=3.0, D=5.0;      // 財布内寸 — 画面アスペクト比から計算（画面=財布の内側）
 const WH=0.95;
-const WALL_MARGIN=.45; // 画面縁に壁・ファスナーが収まる余白
+
+/* 画面の縦横比そのままの財布内寸にする（長辺=5.2unit固定） */
+function computeWalletSize() {
+  const aspect=innerWidth/innerHeight;
+  const LONG=5.2;
+  if(aspect<=1){ D=LONG; W=Math.max(1.9,LONG*aspect); }
+  else         { W=LONG; D=Math.max(1.9,LONG/aspect); }
+}
 
 /* ── DOM ── */
 const sStart    = document.getElementById('s-start');
@@ -145,10 +152,7 @@ function startApp() {
   statusEl.textContent='起動中...';
   infoVal.textContent='---'; infoCd.textContent='';
   sStart.style.display='none'; sApp.style.display='block';
-  /* 財布内寸を画面アスペクト比に合わせる → 画面全体が財布の中になる */
-  const aspect=innerWidth/innerHeight;
-  D=5.0;
-  W=Math.max(1.9,Math.min(4.6,((D/2+WALL_MARGIN)*aspect-WALL_MARGIN)*2));
+  computeWalletSize();
   initScene();
   initPhysics();
   createObjects();
@@ -205,15 +209,18 @@ function initScene() {
   buildWallet();
   window.addEventListener('resize',()=>{
     if(!cam3||!renderer3) return;
+    computeWalletSize();
     fitCamera();
     renderer3.setSize(innerWidth,innerHeight);
+    buildWallet();
+    if(physWorld) buildWalls();
   });
 }
 
-/* 真上見下ろし。財布の縁（壁+ファスナー）がちょうど画面の縁に来る高さに置く */
+/* 真上見下ろし。財布の内壁上端（±W/2, ±D/2, 高さWH）がちょうど
+   画面の縁に一致する高さに置く → 画面全体=財布の中 */
 function fitCamera() {
-  const halfFrame=D/2+WALL_MARGIN;
-  const camH=WH+halfFrame/Math.tan(cam3.fov*.5*Math.PI/180);
+  const camH=WH+(D/2)/Math.tan(cam3.fov*.5*Math.PI/180);
   cam3.aspect=innerWidth/innerHeight;
   cam3.up.set(0,0,-1);
   cam3.position.set(0,camH,0);
@@ -257,47 +264,52 @@ function makeInteriorTex() {
 }
 
 /* ── Wallet geometry ── */
+let walletMats=null, walletGroup=null;
 function buildWallet() {
-  const lT=makeLeatherTex(), iT=makeInteriorTex();
-  const lM=new THREE.MeshStandardMaterial({map:lT,color:0x181818,roughness:.88,metalness:.04});
-  const iM=new THREE.MeshStandardMaterial({map:iT,color:0xffffff,roughness:.96,metalness:.0});
-  const eM=new THREE.MeshStandardMaterial({color:0x222220,roughness:.82,metalness:.06});
-  const zM=new THREE.MeshStandardMaterial({color:0xc8962a,metalness:.9,roughness:.18});
-  const zR=new THREE.MeshStandardMaterial({color:0xb07e22,metalness:.85,roughness:.22});
+  if(!walletMats){
+    walletMats={
+      lM:new THREE.MeshStandardMaterial({map:makeLeatherTex(),color:0x181818,roughness:.88,metalness:.04}),
+      iM:new THREE.MeshStandardMaterial({map:makeInteriorTex(),color:0xffffff,roughness:.96,metalness:.0}),
+      eM:new THREE.MeshStandardMaterial({color:0x222220,roughness:.82,metalness:.06}),
+      zM:new THREE.MeshStandardMaterial({color:0xc8962a,metalness:.9,roughness:.18}),
+      zR:new THREE.MeshStandardMaterial({color:0xb07e22,metalness:.85,roughness:.22}),
+    };
+  }
+  const {lM,iM,eM,zM,zR}=walletMats;
+  if(walletGroup) scene3.remove(walletGroup);
+  walletGroup=new THREE.Group(); scene3.add(walletGroup);
 
   const hW=W/2,hD=D/2;
-  const add=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.receiveShadow=true;scene3.add(o);return o;};
+  const add=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.receiveShadow=true;walletGroup.add(o);return o;};
 
-  add(new THREE.BoxGeometry(W+.5,.28,D+.4),lM,0,-.14,0);                    // exterior base
-  const fl=new THREE.Mesh(new THREE.PlaneGeometry(W-.2,D-.15),iM);          // interior floor
-  fl.rotation.x=-Math.PI/2; fl.position.y=.004; fl.receiveShadow=true; scene3.add(fl);
+  add(new THREE.BoxGeometry(W+.6,.28,D+.6),lM,0,-.14,0);          // exterior base
+  const fl=new THREE.Mesh(new THREE.PlaneGeometry(W,D),iM);       // interior floor
+  fl.rotation.x=-Math.PI/2; fl.position.y=.004; fl.receiveShadow=true; walletGroup.add(fl);
 
-  /* Walls */
-  add(new THREE.BoxGeometry(W+.5,WH,.22),lM,0,WH/2,-(hD+.01));             // back
-  add(new THREE.BoxGeometry(.22,WH,D+.4),lM,-(hW+.11),WH/2,0);             // left
-  add(new THREE.BoxGeometry(.22,WH,D+.4),lM, (hW+.11),WH/2,0);             // right
-  add(new THREE.BoxGeometry(W+.5,WH*.32,.22),lM,0,WH*.16,(hD+.01));         // front (short)
+  /* 4面とも同じ高さの壁 — 内面がちょうど ±W/2, ±D/2 に来る */
+  add(new THREE.BoxGeometry(W+.56,WH,.28),lM,0,WH/2,-(hD+.14));   // back
+  add(new THREE.BoxGeometry(W+.56,WH,.28),lM,0,WH/2, (hD+.14));   // front
+  add(new THREE.BoxGeometry(.28,WH,D+.56),lM,-(hW+.14),WH/2,0);   // left
+  add(new THREE.BoxGeometry(.28,WH,D+.56),lM, (hW+.14),WH/2,0);   // right
 
-  /* Inner wall liner */
-  const ip=(w,h,x,y,z,ry)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),iM);m.position.set(x,y,z);m.rotation.y=ry;m.receiveShadow=true;scene3.add(m);};
-  ip(W-.1,WH,0,WH/2,-(hD-.12),0); ip(D-.1,WH,-(hW-.12),WH/2,0,Math.PI/2); ip(D-.1,WH,(hW-.12),WH/2,0,-Math.PI/2);
+  /* 内張り（内壁面ぴったり・4面） */
+  const ip=(w,x,z,ry)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,WH),iM);m.position.set(x,WH/2,z);m.rotation.y=ry;m.receiveShadow=true;walletGroup.add(m);};
+  ip(W,0,-hD,0); ip(W,0,hD,Math.PI); ip(D,-hW,0,Math.PI/2); ip(D,hW,0,-Math.PI/2);
 
-  /* Top trim */
-  const tr=(x,y,z,tw,td)=>add(new THREE.BoxGeometry(tw,.07,td),eM,x,y,z);
-  tr(0,WH+.035,-(hD+.01),W+.5,.22); tr(-(hW+.11),WH+.035,0,.22,D+.4); tr((hW+.11),WH+.035,0,.22,D+.4); tr(0,WH*.32+.035,(hD+.01),W+.5,.22);
+  /* 縁のパイピング — 内側にオーバーハングさせて画面の縁に見せる */
+  const tr=(x,z,tw,td)=>add(new THREE.BoxGeometry(tw,.08,td),eM,x,WH+.02,z);
+  tr(0,-(hD-.07),W,.20); tr(0,(hD-.07),W,.20); tr(-(hW-.07),0,.20,D); tr((hW-.07),0,.20,D);
 
-  /* Zipper teeth (InstancedMesh) */
-  const nT=65, toothI=new THREE.InstancedMesh(new THREE.BoxGeometry(.11,.065,.10),zM,nT*2);
+  /* ファスナー（左右の縁の内側に沿わせる） */
+  const nT=Math.max(24,Math.round(D*11));
+  const toothI=new THREE.InstancedMesh(new THREE.BoxGeometry(.10,.06,.09),zM,nT*2);
   const dm=new THREE.Object3D(); let idx=0;
-  for(let i=0;i<nT;i++){const z=-hD+.15+i*((D-.3)/nT)+(.5*(D-.3)/nT);for(const sx of[-1,1]){dm.position.set(sx*(hW+.11),WH+.11,z);dm.updateMatrix();toothI.setMatrixAt(idx++,dm.matrix);}}
-  toothI.instanceMatrix.needsUpdate=true; scene3.add(toothI);
+  for(let i=0;i<nT;i++){const z=-hD+.2+(i+.5)*((D-.4)/nT);for(const sx of[-1,1]){dm.position.set(sx*(hW-.07),WH+.10,z);dm.updateMatrix();toothI.setMatrixAt(idx++,dm.matrix);}}
+  toothI.instanceMatrix.needsUpdate=true; walletGroup.add(toothI);
+  for(const sx of[-1,1]){const r=new THREE.Mesh(new THREE.BoxGeometry(.11,.05,D-.3),zR);r.position.set(sx*(hW-.07),WH+.06,0);walletGroup.add(r);}
 
-  /* Zipper rails */
-  for(const sx of[-1,1]){const r=new THREE.Mesh(new THREE.BoxGeometry(.12,.07,D+.2),zR);r.position.set(sx*(hW+.11),WH+.07,0);scene3.add(r);}
-
-  /* Zipper pull */
-  add(new THREE.BoxGeometry(.2,.22,.44),zM,0,WH+.18,hD+.22);
-  const pr=new THREE.Mesh(new THREE.TorusGeometry(.13,.04,8,16),zM); pr.rotation.x=Math.PI/2; pr.position.set(0,WH+.18,hD+.52); scene3.add(pr);
+  /* Zipper pull（前縁の内側） */
+  add(new THREE.BoxGeometry(.18,.2,.4),zM,hW-.24,WH+.12,hD-.5);
 }
 
 /* ── Coin texture ── */
@@ -350,6 +362,7 @@ function initPhysics() {
   const gM=new CANNON.Material('g'), oM=new CANNON.Material('o');
   physWorld.addContactMaterial(new CANNON.ContactMaterial(gM,oM,{friction:.42,restitution:.07}));
   physWorld.addContactMaterial(new CANNON.ContactMaterial(oM,oM,{friction:.35,restitution:.10}));
+  physGM=gM;
 
   /* Floor (plane, normal=+Y after rotation) */
   const fb=new CANNON.Body({mass:0,material:gM});
@@ -357,14 +370,21 @@ function initPhysics() {
   fb.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
   physWorld.addBody(fb);
 
-  /* Walls — thick enough to stop fast-moving objects */
+  buildWalls();
+}
+
+/* Walls — thick enough to stop fast-moving objects. リサイズ時に作り直す */
+let physGM=null, wallBodies=[];
+function buildWalls() {
+  for(const b of wallBodies) physWorld.removeBody(b);
+  wallBodies=[];
   const hw=W/2,hd=D/2;
   const wt=0.5; // half-thickness (thick walls prevent tunneling)
-  const wall=(x,y,z,hx,hy,hz)=>{const b=new CANNON.Body({mass:0,material:gM});b.addShape(new CANNON.Box(new CANNON.Vec3(hx,hy,hz)));b.position.set(x,y,z);physWorld.addBody(b);};
-  wall(-(hw+wt), WH/2+.1, 0, wt, WH/2+.3, hd+wt+.1);
-  wall( (hw+wt), WH/2+.1, 0, wt, WH/2+.3, hd+wt+.1);
-  wall(0, WH/2+.1, -(hd+wt), hw+wt+.1, WH/2+.3, wt);
-  wall(0, WH/2+.1,  (hd+wt), hw+wt+.1, WH/2+.3, wt);
+  const wall=(x,z,hx,hz)=>{const b=new CANNON.Body({mass:0,material:physGM});b.addShape(new CANNON.Box(new CANNON.Vec3(hx,WH/2+.5,hz)));b.position.set(x,WH/2+.1,z);physWorld.addBody(b);wallBodies.push(b);};
+  wall(-(hw+wt), 0, wt, hd+wt+.1);
+  wall( (hw+wt), 0, wt, hd+wt+.1);
+  wall(0, -(hd+wt), hw+wt+.1, wt);
+  wall(0,  (hd+wt), hw+wt+.1, wt);
 }
 
 /* ── Gravity from gyro ── */
@@ -537,12 +557,12 @@ function onResults(res) {
   if(pinching&&!wasPinching&&!grabbed){
     const obj=findObjAt(sx,sy);
     if(obj){
-      grabbed={obj,grabHandSz:handScale(lm),baseY:obj.body.position.y};
+      grabbed={obj,grabHandSz:handScale(lm),grabSY:sy,baseY:obj.body.position.y};
       /* Make body kinematic so physics doesn't fight us */
       obj.body.type=CANNON.Body.KINEMATIC;
       obj.body.velocity.set(0,0,0);
       obj.body.angularVelocity.set(0,0,0);
-      statusEl.textContent=`${obj.def.label}をつかんだ！`;
+      statusEl.textContent=`${obj.def.label}をつかんだ！手を上げて持ち上げよう`;
       infoVal.textContent=obj.def.label;
       const cdStr=obj.def.cdRatio>=1?'軽い':obj.def.cdRatio>=.6?'普通':obj.def.cdRatio>=.3?'重い':'超重い！';
       infoCd.textContent=`CD×${obj.def.cdRatio}(${cdStr})`;
@@ -552,11 +572,13 @@ function onResults(res) {
   if(!pinching&&wasPinching&&grabbed) releaseGrab();
   wasPinching=pinching;
 
-  /* Lift fraction — use multi-landmark scale, threshold 0.18 for sensitivity */
+  /* Lift fraction — 「手を上へ動かす」or「手をカメラに近づける」の大きい方。
+     どちらも直感的な"持ち上げ"ジェスチャーとして機能する */
   if(grabbed&&pinching){
-    const curScale=handScale(lm);
-    const szRatio=curScale/Math.max(grabbed.grabHandSz,1e-4);
-    liftFracRaw=Math.min(Math.max(0,(1-szRatio)/.18),1.0);
+    const szRatio=handScale(lm)/Math.max(grabbed.grabHandSz,1e-4);
+    const scLift=(szRatio-1)/.22;                       // 手が近づく→大きく映る
+    const dyLift=(grabbed.grabSY-sy)/(innerHeight*.28); // 手が画面上方向へ動く
+    liftFracRaw=Math.min(Math.max(0,Math.max(scLift,dyLift)),1.0);
   } else if(!grabbed){
     liftFracRaw=0;
   }
@@ -571,8 +593,9 @@ function releaseGrab() {
   obj.body.updateMassProperties();
   obj.body.velocity.set((Math.random()-.5)*.5,-1.0,(Math.random()-.5)*.5);
   obj.body.wakeUp&&obj.body.wakeUp();
-  /* Sync body position from mesh */
+  /* Sync body position from mesh, reset visual lift scale */
   obj.body.position.copy(obj.mesh.position);
+  obj.mesh.scale.setScalar(1);
   grabbed=null; liftFrac=0; animLift=0;
   statusEl.textContent='傾けて転がす・ピンチでつかむ';
   infoVal.textContent='---'; infoCd.textContent='';
@@ -626,10 +649,12 @@ function renderLoop(ts) {
       /* オブジェクトの実サイズぶん壁の内側にクランプ */
       const halfX=def.type==='coin'?def.r:def.bw/2;
       const halfZ=def.type==='coin'?def.r:def.bd/2;
-      const hW=Math.max(.1,W/2-halfX-.03), hD=Math.max(.1,D/2-halfZ-.03);
+      const hW=Math.max(.1,W/2-halfX-.12), hD=Math.max(.1,D/2-halfZ-.12);
       wp.x=Math.max(-hW,Math.min(hW,wp.x));
       wp.z=Math.max(-hD,Math.min(hD,wp.z));
       obj.mesh.position.set(wp.x,animLift,wp.z);
+      /* 持ち上げ高さに応じて拡大 — 「浮いている」ことを視覚的に強調 */
+      obj.mesh.scale.setScalar(1+animLift*.5);
       /* Keep body in sync for collision */
       obj.body.position.set(wp.x,animLift,wp.z);
       obj.body.velocity.set(0,0,0);
