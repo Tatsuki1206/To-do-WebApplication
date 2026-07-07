@@ -87,20 +87,21 @@
    OBJECT DEFINITIONS
    cdRatio: 持ち上げCD比（小さいほど重い）
 ═══════════════════════════════════════ */
+/* 実物の比率に合わせたサイズ（1unit≒27mm、財布内寸との比を現実に近づける） */
 const OBJ_DEFS = [
-  { type:'coin', value:100,   label:'100円',   r:.062, h:.020, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
-  { type:'coin', value:100,   label:'100円',   r:.062, h:.020, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
-  { type:'coin', value:100,   label:'100円',   r:.062, h:.020, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
-  { type:'coin', value:500,   label:'500円',   r:.075, h:.025, mass:2.0, cdRatio:.50, ldam:.40, adam:.50 },
-  { type:'coin', value:500,   label:'500円',   r:.075, h:.025, mass:2.0, cdRatio:.50, ldam:.40, adam:.50 },
-  { type:'bill', value:1000,  label:'1,000円', bw:0.70, bd:0.42, h:.008, mass:.07, cdRatio:1.10, ldam:.70, adam:.88 },
-  { type:'bill', value:10000, label:'壱万円',  bw:0.80, bd:0.48, h:.008, mass:.07, cdRatio:.06, ldam:.70, adam:.88 },
+  { type:'coin', value:100,   label:'100円',   r:.30, h:.055, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
+  { type:'coin', value:100,   label:'100円',   r:.30, h:.055, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
+  { type:'coin', value:100,   label:'100円',   r:.30, h:.055, mass:.5,  cdRatio:.90, ldam:.35, adam:.45 },
+  { type:'coin', value:500,   label:'500円',   r:.35, h:.065, mass:2.0, cdRatio:.50, ldam:.40, adam:.50 },
+  { type:'coin', value:500,   label:'500円',   r:.35, h:.065, mass:2.0, cdRatio:.50, ldam:.40, adam:.50 },
+  { type:'bill', value:1000,  label:'1,000円', bw:1.35, bd:0.78, h:.03, mass:.07, cdRatio:1.10, ldam:.70, adam:.88 },
+  { type:'bill', value:10000, label:'壱万円',  bw:1.45, bd:0.84, h:.03, mass:.07, cdRatio:.06, ldam:.70, adam:.88 },
 ];
 
 const BASE_LIFT = 1.8; // world units, max possible lift
-const W=3.0, D=5.4, WH=0.95;
-const CAM_BASE = new THREE.Vector3(0, 7.0, 2.6);
-const CAM_LOOK = new THREE.Vector3(0, 0, 0.3);
+let W=3.0, D=5.0;      // 財布内寸 — startApp() で画面アスペクト比から再計算
+const WH=0.95;
+const WALL_MARGIN=.45; // 画面縁に壁・ファスナーが収まる余白
 
 /* ── DOM ── */
 const sStart    = document.getElementById('s-start');
@@ -121,6 +122,7 @@ let physObjs = []; // {def, body, mesh, origMass}
 /* ── Grab state ── */
 let grabbed     = null; // {obj, grabHandSz, baseY}
 let wasPinching = false;
+let pinchStreak = 0;
 let pinchSX=0, pinchSY=0;
 let liftFrac=0, liftFracRaw=0, animLift=0;
 /* ── Gyro ── */
@@ -137,12 +139,16 @@ document.getElementById('btn-start').addEventListener('click', startApp);
 document.getElementById('btn-back').addEventListener('click', stopApp);
 
 function startApp() {
-  physObjs=[]; grabbed=null; wasPinching=false; liftFrac=0; animLift=0;
+  physObjs=[]; grabbed=null; wasPinching=false; pinchStreak=0; liftFrac=0; animLift=0;
   rawBeta=smBeta=90; rawGamma=smGamma=0; lastTs=0;
   loadingOvl.classList.remove('hidden');
   statusEl.textContent='起動中...';
   infoVal.textContent='---'; infoCd.textContent='';
   sStart.style.display='none'; sApp.style.display='block';
+  /* 財布内寸を画面アスペクト比に合わせる → 画面全体が財布の中になる */
+  const aspect=innerWidth/innerHeight;
+  D=5.0;
+  W=Math.max(1.9,Math.min(4.6,((D/2+WALL_MARGIN)*aspect-WALL_MARGIN)*2));
   initScene();
   initPhysics();
   createObjects();
@@ -169,22 +175,29 @@ function stopApp() {
 function initScene() {
   scene3=new THREE.Scene();
   scene3.background=new THREE.Color(0x050505);
-  scene3.fog=new THREE.FogExp2(0x050505,.08);
 
-  cam3=new THREE.PerspectiveCamera(44,innerWidth/innerHeight,.1,40);
-  cam3.position.copy(CAM_BASE); cam3.lookAt(CAM_LOOK);
+  cam3=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,40);
+  fitCamera();
 
   renderer3=new THREE.WebGLRenderer({antialias:true});
   renderer3.setSize(innerWidth,innerHeight);
   renderer3.setPixelRatio(Math.min(devicePixelRatio,2));
   renderer3.toneMapping=THREE.ACESFilmicToneMapping;
   renderer3.toneMappingExposure=1.15;
+  renderer3.shadowMap.enabled=true;
+  renderer3.shadowMap.type=THREE.PCFSoftShadowMap;
   renderer3.domElement.style.cssText='position:absolute;inset:0;z-index:0;';
   sApp.insertBefore(renderer3.domElement,sApp.firstChild);
 
   /* Lighting */
-  scene3.add(new THREE.AmbientLight(0xffd0a0,.38));
-  const sun=new THREE.DirectionalLight(0xfff5e0,1.7); sun.position.set(1.5,7,3); scene3.add(sun);
+  scene3.add(new THREE.AmbientLight(0xffd0a0,.45));
+  const sun=new THREE.DirectionalLight(0xfff5e0,1.6); sun.position.set(1.5,7,3);
+  sun.castShadow=true;
+  sun.shadow.mapSize.set(1024,1024);
+  sun.shadow.camera.left=-4; sun.shadow.camera.right=4;
+  sun.shadow.camera.top=4; sun.shadow.camera.bottom=-4;
+  sun.shadow.camera.near=.5; sun.shadow.camera.far=16;
+  scene3.add(sun);
   const fill=new THREE.PointLight(0xffb060,.9,12); fill.position.set(-1,4,3); scene3.add(fill);
   const glow=new THREE.PointLight(0xffd080,.5,7);  glow.position.set(0,1.5,0); scene3.add(glow);
   const rim=new THREE.PointLight(0xffc060,.35,10); rim.position.set(0,2.5,-3); scene3.add(rim);
@@ -192,9 +205,20 @@ function initScene() {
   buildWallet();
   window.addEventListener('resize',()=>{
     if(!cam3||!renderer3) return;
-    cam3.aspect=innerWidth/innerHeight; cam3.updateProjectionMatrix();
+    fitCamera();
     renderer3.setSize(innerWidth,innerHeight);
   });
+}
+
+/* 真上見下ろし。財布の縁（壁+ファスナー）がちょうど画面の縁に来る高さに置く */
+function fitCamera() {
+  const halfFrame=D/2+WALL_MARGIN;
+  const camH=WH+halfFrame/Math.tan(cam3.fov*.5*Math.PI/180);
+  cam3.aspect=innerWidth/innerHeight;
+  cam3.up.set(0,0,-1);
+  cam3.position.set(0,camH,0);
+  cam3.lookAt(0,0,0);
+  cam3.updateProjectionMatrix();
 }
 
 /* ── Procedural textures ── */
@@ -219,10 +243,15 @@ function makeLeatherTex() {
 }
 
 function makeInteriorTex() {
+  /* 明るめの起毛ライニング — コインとのコントラストと影の視認性を確保 */
   const c=document.createElement('canvas'); c.width=c.height=256;
   const ctx=c.getContext('2d');
-  ctx.fillStyle='#111111'; ctx.fillRect(0,0,256,256);
-  for(let i=0;i<28000;i++){const v=Math.floor(Math.random()*18+4);ctx.fillStyle=`rgba(${v},${v},${v},${Math.random()*.07})`;ctx.fillRect(Math.random()*256,Math.random()*256,1,1);}
+  ctx.fillStyle='#3a2c1c'; ctx.fillRect(0,0,256,256);
+  for(let i=0;i<28000;i++){
+    const v=Math.random();
+    ctx.fillStyle=`rgba(${58+v*30|0},${44+v*24|0},${28+v*16|0},${Math.random()*.5})`;
+    ctx.fillRect(Math.random()*256,Math.random()*256,1,1);
+  }
   const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(4,6);
   return t;
 }
@@ -231,17 +260,17 @@ function makeInteriorTex() {
 function buildWallet() {
   const lT=makeLeatherTex(), iT=makeInteriorTex();
   const lM=new THREE.MeshStandardMaterial({map:lT,color:0x181818,roughness:.88,metalness:.04});
-  const iM=new THREE.MeshStandardMaterial({map:iT,color:0x101010,roughness:.96,metalness:.0});
+  const iM=new THREE.MeshStandardMaterial({map:iT,color:0xffffff,roughness:.96,metalness:.0});
   const eM=new THREE.MeshStandardMaterial({color:0x222220,roughness:.82,metalness:.06});
   const zM=new THREE.MeshStandardMaterial({color:0xc8962a,metalness:.9,roughness:.18});
   const zR=new THREE.MeshStandardMaterial({color:0xb07e22,metalness:.85,roughness:.22});
 
   const hW=W/2,hD=D/2;
-  const add=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);scene3.add(o);return o;};
+  const add=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.receiveShadow=true;scene3.add(o);return o;};
 
   add(new THREE.BoxGeometry(W+.5,.28,D+.4),lM,0,-.14,0);                    // exterior base
   const fl=new THREE.Mesh(new THREE.PlaneGeometry(W-.2,D-.15),iM);          // interior floor
-  fl.rotation.x=-Math.PI/2; fl.position.y=.004; scene3.add(fl);
+  fl.rotation.x=-Math.PI/2; fl.position.y=.004; fl.receiveShadow=true; scene3.add(fl);
 
   /* Walls */
   add(new THREE.BoxGeometry(W+.5,WH,.22),lM,0,WH/2,-(hD+.01));             // back
@@ -250,7 +279,7 @@ function buildWallet() {
   add(new THREE.BoxGeometry(W+.5,WH*.32,.22),lM,0,WH*.16,(hD+.01));         // front (short)
 
   /* Inner wall liner */
-  const ip=(w,h,x,y,z,ry)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),iM);m.position.set(x,y,z);m.rotation.y=ry;scene3.add(m);};
+  const ip=(w,h,x,y,z,ry)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),iM);m.position.set(x,y,z);m.rotation.y=ry;m.receiveShadow=true;scene3.add(m);};
   ip(W-.1,WH,0,WH/2,-(hD-.12),0); ip(D-.1,WH,-(hW-.12),WH/2,0,Math.PI/2); ip(D-.1,WH,(hW-.12),WH/2,0,-Math.PI/2);
 
   /* Top trim */
@@ -354,8 +383,10 @@ function updateGravity(beta,gamma) {
 function createObjects() {
   const oM=new CANNON.Material('o');
   OBJ_DEFS.forEach((def,i)=>{
-    const sx=(Math.random()-.5)*(W-1.0);
-    const sz=(Math.random()-.5)*(D-1.5)*.6;
+    /* オブジェクトの大きさぶん壁から離してスポーン */
+    const halfSize=def.type==='coin'?def.r:Math.max(def.bw,def.bd)/2;
+    const sx=(Math.random()-.5)*Math.max(.15,W-2*halfSize-.5);
+    const sz=(Math.random()-.5)*Math.max(.3,D-2*halfSize-.8);
 
     /* Three.js mesh */
     let mesh;
@@ -367,8 +398,9 @@ function createObjects() {
       const geom=new THREE.BoxGeometry(def.bw,def.h,def.bd);
       const mat=new THREE.MeshStandardMaterial({map:makeBillTex(def.value),roughness:.72,metalness:.02});
       mesh=new THREE.Mesh(geom,mat);
-      mesh.rotation.y=(Math.random()-.5)*.8;
+      mesh.rotation.y=(Math.random()-.5)*.5;
     }
+    mesh.castShadow=true; mesh.receiveShadow=true;
     scene3.add(mesh);
 
     /* Cannon body */
@@ -444,15 +476,29 @@ function handScale(lm){
 function pinchRat(lm){const h=handScale(lm);return h>1e-3?d2(lm[4],lm[8])/h:1;}
 function pinchCtr(lm){return{x:(lm[4].x+lm[8].x)/2,y:(lm[4].y+lm[8].y)/2};}
 
-/* ── Find closest object to screen point ── */
+/* ── Find object under screen point ──
+   レイキャストでメッシュ形状と正確に交差判定。
+   外れた場合のみ、実サイズ+わずかな救済マージンで最寄りを拾う */
 function findObjAt(sx,sy) {
-  let best=null,bestD=155;
-  for(const o of physObjs){
-    if(o===grabbed?.obj) continue;
-    const sp=o.mesh.position.clone().project(cam3);
-    const ox=(sp.x+1)/2*innerWidth, oy=(-sp.y+1)/2*innerHeight;
-    const d=Math.hypot(sx-ox,sy-oy);
-    if(d<bestD){bestD=d;best=o;}
+  const ndx=(sx/innerWidth)*2-1, ndy=-((sy/innerHeight)*2-1);
+  const rc=new THREE.Raycaster();
+  rc.setFromCamera(new THREE.Vector2(ndx,ndy),cam3);
+
+  const candidates=physObjs.filter(o=>o!==grabbed?.obj);
+  const hits=rc.intersectObjects(candidates.map(o=>o.mesh),false);
+  if(hits.length){
+    const hit=candidates.find(o=>o.mesh===hits[0].object);
+    if(hit) return hit;
+  }
+
+  /* grace fallback: レイとオブジェクト中心の距離を実サイズで正規化して判定 */
+  let best=null,bestScore=1;
+  const pt=new THREE.Vector3();
+  for(const o of candidates){
+    const objR=o.def.type==='coin'?o.def.r:Math.min(o.def.bw,o.def.bd)/2;
+    rc.ray.closestPointToPoint(o.mesh.position,pt);
+    const score=pt.distanceTo(o.mesh.position)/(objR+.12);
+    if(score<bestScore){bestScore=score;best=o;}
   }
   return best;
 }
@@ -472,11 +518,15 @@ function onResults(res) {
   const lmArr=res.multiHandLandmarks;
   if(!lmArr||lmArr.length===0){
     if(grabbed) releaseGrab();
-    wasPinching=false; pinchDot.style.display='none'; return;
+    wasPinching=false; pinchStreak=0; pinchDot.style.display='none'; return;
   }
-  const lm=lmArr[0], pr=pinchRat(lm), hs=handSz(lm), pc=pinchCtr(lm);
-  const thresh=grabbed?.obj?0.38:0.24;
-  const pinching=pr<thresh;
+  const lm=lmArr[0], pr=pinchRat(lm), pc=pinchCtr(lm);
+  /* ヒステリシス: つかむ時は厳しく(0.22)、保持中は緩く(0.34) */
+  const thresh=grabbed?0.34:0.22;
+  const pinchingNow=pr<thresh;
+  pinchStreak=pinchingNow?pinchStreak+1:0;
+  /* 2フレーム連続でピンチ確定 → トラッキングノイズによる誤グラブを防ぐ */
+  const pinching=grabbed?pinchingNow:pinchStreak>=2;
   const sx=(1-pc.x)*innerWidth, sy=pc.y*innerHeight;
   pinchSX=sx; pinchSY=sy;
 
@@ -566,14 +616,17 @@ function renderLoop(ts) {
 
   /* Grabbed object: manual position */
   if(grabbed){
-    const obj=grabbed.obj;
-    const rawLift=liftFrac*BASE_LIFT*obj.def.cdRatio;
-    const targetY=Math.min(obj.def.h/2+rawLift, WH-.12);
+    const obj=grabbed.obj, def=obj.def;
+    const rawLift=liftFrac*BASE_LIFT*def.cdRatio;
+    const targetY=Math.min(def.h/2+rawLift, WH-.12);
     animLift+=(targetY-animLift)*.14;
 
     const wp=screenToWorld(pinchSX,pinchSY,animLift);
     if(wp){
-      const hW=W/2-.3, hD=D/2-.3;
+      /* オブジェクトの実サイズぶん壁の内側にクランプ */
+      const halfX=def.type==='coin'?def.r:def.bw/2;
+      const halfZ=def.type==='coin'?def.r:def.bd/2;
+      const hW=Math.max(.1,W/2-halfX-.03), hD=Math.max(.1,D/2-halfZ-.03);
       wp.x=Math.max(-hW,Math.min(hW,wp.x));
       wp.z=Math.max(-hD,Math.min(hD,wp.z));
       obj.mesh.position.set(wp.x,animLift,wp.z);
@@ -582,9 +635,6 @@ function renderLoop(ts) {
       obj.body.velocity.set(0,0,0);
       obj.body.angularVelocity.set(0,0,0);
     }
-    /* UI */
-    const distRest=CAM_BASE.y-obj.def.h/2;
-    const distNow=Math.max(CAM_BASE.y-animLift,.4);
     liftFill.style.height=(liftFrac*100).toFixed(0)+'%';
   } else {
     liftFill.style.height='0%';
